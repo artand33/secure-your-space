@@ -34,7 +34,9 @@ const WhyUs = () => {
           {reasons.map((reason, i) => (
             <div
               key={reason.title}
-              className={`text-center ${isVisible ? "animate-fade-in" : "opacity-0"}`}
+              className={`text-center bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)] ${
+                isVisible ? "animate-fade-in" : "opacity-0"
+              }`}
               style={{ animationDelay: isVisible ? `${i * 150 + 200}ms` : undefined }}
             >
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">

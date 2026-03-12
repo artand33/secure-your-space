@@ -38,9 +38,13 @@ const Services = ({ onCTAClick }: ServicesProps) => {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section id="services" className="py-20 md:py-28">
+    <section
+      id="services"
+      className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-background to-secondary/40"
+    >
+      <div className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.18),_transparent_65%)]" />
       <div className="section-divider mb-20" />
-      <div ref={ref} className="container mx-auto px-4">
+      <div ref={ref} className="relative z-10 container mx-auto px-4">
         <div className={`text-center mb-16 ${isVisible ? "animate-fade-in" : "opacity-0"}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Security Solutions</h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
@@ -52,7 +56,7 @@ const Services = ({ onCTAClick }: ServicesProps) => {
           {services.map((service, i) => (
             <div
               key={service.title}
-              className={`group relative bg-card rounded-xl p-8 border border-border hover:border-primary/40 transition-all duration-300 hover:shadow-[0_0_30px_hsl(25_100%_50%/0.1)] ${
+              className={`group relative bg-card rounded-xl p-8 border border-border/70 hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_hsl(25_100%_50%/0.16)] hover:-translate-y-1 ${
                 isVisible ? "animate-fade-in" : "opacity-0"
               }`}
               style={{ animationDelay: isVisible ? `${i * 100 + 200}ms` : undefined }}

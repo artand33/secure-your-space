@@ -9,11 +9,11 @@ const Hero = ({ onCTAClick }: HeroProps) => {
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-secondary/20" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-primary/10" />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
 
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-secondary/50 mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-secondary/60 backdrop-blur-sm mb-8">
           <Shield className="w-4 h-4 text-primary" />
           <span className="text-sm text-muted-foreground">Retail · Residential · Commercial</span>
         </div>

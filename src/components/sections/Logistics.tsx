@@ -34,9 +34,15 @@ const Logistics = () => {
         </div>
 
         {/* Property Types */}
-        <div className={`flex justify-center gap-4 mb-20 ${isVisible ? "animate-fade-in" : "opacity-0"}`} style={{ animationDelay: "200ms" }}>
+        <div
+          className={`flex justify-center gap-4 mb-20 ${isVisible ? "animate-fade-in" : "opacity-0"}`}
+          style={{ animationDelay: "200ms" }}
+        >
           {["Retail", "Residential", "Commercial"].map((type) => (
-            <Badge key={type} className="text-sm px-4 py-1.5">
+            <Badge
+              key={type}
+              className="text-sm px-4 py-1.5 bg-accent/10 text-accent border border-accent/40"
+            >
               {type}
             </Badge>
           ))}
@@ -57,8 +63,11 @@ const Logistics = () => {
         </div>
 
         {/* Additional Info */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${isVisible ? "animate-fade-in" : "opacity-0"}`} style={{ animationDelay: "400ms" }}>
-          <div className="bg-card rounded-xl p-6 border border-border">
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${isVisible ? "animate-fade-in" : "opacity-0"}`}
+          style={{ animationDelay: "400ms" }}
+        >
+          <div className="bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)]">
             <h4 className="font-semibold mb-3">Average Installation Times</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>CCTV System — 1 day</li>
@@ -67,7 +76,7 @@ const Logistics = () => {
               <li>Intercom System — Half day</li>
             </ul>
           </div>
-          <div className="bg-card rounded-xl p-6 border border-border">
+          <div className="bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)]">
             <h4 className="font-semibold mb-3">Who This Is For</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>✓ Property owners who want a reliable, professionally installed system</li>

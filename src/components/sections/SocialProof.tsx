@@ -39,7 +39,9 @@ const SocialProof = () => {
           {testimonials.map((t, i) => (
             <div
               key={t.name}
-              className={`bg-card rounded-xl p-6 border border-border ${isVisible ? "animate-fade-in" : "opacity-0"}`}
+              className={`bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)] ${
+                isVisible ? "animate-fade-in" : "opacity-0"
+              }`}
               style={{ animationDelay: isVisible ? `${i * 100 + 200}ms` : undefined }}
             >
               <div className="flex gap-1 mb-4">
