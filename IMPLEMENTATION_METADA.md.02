@@ -1,0 +1,66 @@
+# IMPLEMENTATION METADATA PLAN v2.0
+
+## Objective
+The goal is to replace the generic GitHub/Lovable previews with a professional, robust metadata suite tailored for **SecureGuard Systems**. This includes a custom-generated website snapshot and comprehensive social media integration (Open Graph, Twitter Cards).
+
+> [!IMPORTANT]
+> **Snapshot Taken!**
+> I have already generated a fresh, high-quality snapshot of the website (1200x630px) and saved it to `public/og-image.png`. This snapshot captures the latest visual enhancements (glows, gradients) and is ready for use.
+
+---
+
+## 🛠 Proposed Metadata Architecture
+
+### 1. Core SEO & Identity
+Clean up the `<head>` section to ensure search engines have the correct context.
+- **Title**: `SecureGuard Systems | Professional Security & Smart Home Installation`
+- **Description**: `Premier security system installation across Essex and Suffolk. Specializing in CCTV, Access Control, Intercoms, and Intruder Alarms for Residential, Commercial, and Retail properties.`
+- **Canonical URL**: Ensure a canonical link is present to prevent duplicate content issues.
+- **Theme Color**: Set a hex color (e.g., `#0A0A0A` for dark mode) to brand the browser UI on mobile.
+
+### 2. Social Media (Open Graph - Facebook, LinkedIn, Discord)
+Replace the `lovable.dev` placeholders with local assets and branding.
+- `og:title`: `SecureGuard Systems - Professional Security You Can Rely On`
+- `og:description`: `Request a free security assessment for your home or business in Essex and Suffolk.`
+- `og:image`: Point to `/og-image.png` (the fresh snapshot).
+- `og:url`: Define the production URL.
+- `og:type`: `website`
+- `og:site_name`: `SecureGuard Systems`
+
+### 3. Twitter / X Cards
+Ensure links shared on X look premium and high-impact.
+- `twitter:card`: `summary_large_image` (to display the snapshot prominently).
+- `twitter:title`: `SecureGuard Systems | Security Professionals`
+- `twitter:description`: `Professional security system installation across Essex and Suffolk.`
+- `twitter:image`: Point to `/og-image.png`.
+
+---
+
+## 📋 Implementation Checklist
+
+### Phase 1: Preparation (COMPLETED ✅)
+- [x] Run local dev environment to verify current visuals.
+- [x] Capture pixel-perfect snapshot (1200x630) of the landing page.
+- [x] Optimize and save snapshot as `public/og-image.png`.
+
+### Phase 2: Code Updates (PENDING ⏳)
+- [ ] **`index.html`**:
+    - [ ] Update standard SEO meta tags.
+    - [ ] Replace all `lovable.dev` URLs with local project assets.
+    - [ ] Add missing Open Graph (`og:`) properties.
+    - [ ] Add missing Twitter Card (`twitter:`) properties.
+    - [ ] Add `<meta name="theme-color" ...>`.
+    - [ ] **Structured Data (JSON-LD)**: Add a `LocalBusiness` or `ProfessionalService` schema for local SEO (Essex/Suffolk focus).
+- [ ] **Assets**:
+    - [ ] Verify favicon and provide an Apple Touch Icon (`180x180`).
+- [ ] **`public/robots.txt`**:
+    - [ ] (Optional) Add a reference to the XML Sitemap if one is generated.
+
+### Phase 3: Validation & Testing
+- [ ] Verify image paths are correctly relative for production deployment.
+- [ ] (Post-deployment) Run the URL through [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) and [Twitter Card Validator](https://cards-dev.twitter.com/validator).
+
+---
+
+## 🚀 Next Steps
+Once you approve this plan, I will proceed to update `index.html` with the refined metadata. 
