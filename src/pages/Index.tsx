@@ -23,6 +23,13 @@ const Index = () => {
             <Shield className="w-5 h-5 text-primary" />
             <span className="font-bold text-sm">SecureGuard Systems</span>
           </div>
+          
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#services" className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider">Services</a>
+            <a href="#why-us" className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider">Why Choose Us</a>
+            <a href="#faq" className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider">FAQ</a>
+          </div>
+
           <button
             onClick={handleCTAClick}
             className="text-xs font-medium px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"

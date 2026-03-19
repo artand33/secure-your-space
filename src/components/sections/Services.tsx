@@ -40,7 +40,7 @@ const Services = ({ onCTAClick }: ServicesProps) => {
   return (
     <section
       id="services"
-      className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-background to-secondary/40"
+      className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-background to-secondary/40 scroll-mt-20"
     >
       <div className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.18),_transparent_65%)]" />
       <div className="section-divider mb-20" />
