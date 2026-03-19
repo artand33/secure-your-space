@@ -23,7 +23,7 @@ const WhyUs = () => {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section className="py-20 md:py-28">
+    <section id="why-us" className="py-20 md:py-28 scroll-mt-20">
       <div className="section-divider mb-20" />
       <div ref={ref} className="container mx-auto px-4 max-w-4xl">
         <div className={`text-center mb-16 ${isVisible ? "animate-fade-in" : "opacity-0"}`}>
