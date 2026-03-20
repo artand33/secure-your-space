@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { User, Mail, Loader2, ArrowLeft, Camera } from 'lucide-react';
+import { User, Mail, Loader2, ArrowLeft, Camera, Home, MapPin, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 
 const Profile = () => {
   const { profile, user, loading: authLoading, refreshProfile } = useAuth();
@@ -17,16 +19,26 @@ const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(profile?.full_name || '');
+  const [propertyType, setPropertyType] = useState(profile?.property_type || '');
+  const [address, setAddress] = useState(profile?.address || '');
 
   useEffect(() => {
-    if (profile) setFullName(profile.full_name || '');
+    if (profile) {
+      setFullName(profile.full_name || '');
+      setPropertyType(profile.property_type || '');
+      setAddress(profile.address || '');
+    }
   }, [profile]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setLoading(true);
-    const { error } = await supabase.from('profiles').update({ full_name: fullName }).eq('id', user.id);
+    const { error } = await supabase.from('profiles').update({ 
+      full_name: fullName,
+      property_type: propertyType,
+      address: address
+    }).eq('id', user.id);
     if (error) {
       toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
     } else {
@@ -78,16 +90,72 @@ const Profile = () => {
           </div>
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white">{profile?.full_name || 'SecureGuard User'}</h2>
-            <p className="text-[#9CA3AF] text-sm">{user?.email}</p>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <p className="text-[#9CA3AF] text-sm">{user?.email}</p>
+              {profile?.role && (
+                <Badge className={`${
+                  profile.role === 'admin' ? 'bg-[#E8640A]' : 
+                  profile.role === 'client' ? 'bg-blue-600' : 
+                  profile.role === 'banned' ? 'bg-red-600' : 
+                  'bg-zinc-700'
+                } text-white hover:none capitalize`}>
+                  {profile.role}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
+
+        {profile?.rejection_reason && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">Update Required</p>
+              <p className="text-sm opacity-80">{profile.rejection_reason}</p>
+            </div>
+          </div>
+        )}
         <Card className="bg-[#1A1A1A] border-[#2E2E2E]">
           <CardHeader><CardTitle className="text-white text-lg">Profile Details</CardTitle></CardHeader>
           <CardContent>
             <form onSubmit={handleUpdate} className="space-y-6">
               <div className="space-y-2">
                 <Label className="text-[#9CA3AF]">Display Name</Label>
-                <div className="relative"><User className="absolute left-3 top-3.5 w-4 h-4 text-[#4E4E4E]" /><Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="bg-[#2E2E2E] border-[#3E3E3E] text-white pl-10 h-12" /></div>
+                <div className="relative">
+                  <User className="absolute left-3 top-3.5 w-4 h-4 text-[#4E4E4E]" />
+                  <Input 
+                    placeholder="Enter your full name"
+                    value={fullName} 
+                    onChange={(e) => setFullName(e.target.value)} 
+                    className="bg-[#2E2E2E] border-[#3E3E3E] text-white pl-10 h-12" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[#9CA3AF]">Property Type</Label>
+                <div className="relative">
+                  <Home className="absolute left-3 top-3.5 w-4 h-4 text-[#4E4E4E]" />
+                  <Input 
+                    placeholder="e.g. Residential, Commercial"
+                    value={propertyType} 
+                    onChange={(e) => setPropertyType(e.target.value)} 
+                    className="bg-[#2E2E2E] border-[#3E3E3E] text-white pl-10 h-12" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[#9CA3AF]">Home/Site Address</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 w-4 h-4 text-[#4E4E4E]" />
+                  <Textarea 
+                    placeholder="Enter your full address"
+                    value={address} 
+                    onChange={(e) => setAddress(e.target.value)} 
+                    className="bg-[#2E2E2E] border-[#3E3E3E] text-white pl-10 min-h-[100px] resize-none pt-2"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className="text-[#9CA3AF]">Registry Email Address</Label>

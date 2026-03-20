@@ -172,13 +172,13 @@ Pre-auth lead tracking.
 
 ## 🗺️ Implementation Phases
 
-### Phase 1: Foundation & Auth Setup (2-3 Days)
-- [ ] Initialize Supabase project & local CLI.
-- [ ] **Database Setup**: Create all tables and role ENUMs (Profiles, Service Types, Jobs, Bookings, etc.).
-- [ ] **Auth Configuration**: Setup `auth.users` trigger for profile creation.
-- [ ] **Auth Pages**: Implement `/login`, `/signup`, `/logout` pages.
-- [ ] **Mockup Dashboards**: Build `/admin/dashboard` and `/user/dashboard` mockups to test auth and roles.
-- [ ] **Access Control**: Implement Private Route wrappers and role-based redirects.
+### Phase 1: Foundation & Auth Setup (Done ✅)
+- [x] Initialize Supabase project & local CLI.
+- [x] **Database Setup**: Create all tables and role ENUMs (Profiles, Service Types, Jobs, Bookings, etc.).
+- [x] **Auth Configuration**: Setup database trigger (`handle_new_user`) for automatic profile creation.
+- [x] **Auth Pages**: Implement `/login`, `/signup`, `/logout` pages.
+- [x] **Mockup Dashboards**: Build `/admin/dashboard` and `/user/dashboard` to test auth and roles.
+- [x] **Access Control**: Implement `ProtectedRoute` wrappers and role-based redirects.
 
 ### Phase 2: Booking System & Client Flow (4-5 Days)
 - [ ] Public Service catalog (Read-only jobs).
@@ -196,9 +196,13 @@ Pre-auth lead tracking.
 
 ### Phase 4: Notification Center & Final Polish (3 Days)
 - [ ] Notification System: Database table + Realtime subscription + Email fallback.
-- [ ] Account management: Profile editing, photo upload, login history.
+- [x] **Account Management (Profile)**:
+  - [x] Profile editing (Name, Property Type, Address).
+  - [x] Avatar/Photo upload (Supabase Storage integration).
+  - [x] Role display and status alerts (Rejection reasons).
+  - [ ] Login history view.
 - [ ] Dashboard KPIs and Calendar View for Admin.
-- [ ] Comprehensive RLS policy testing for all roles.
+- [!] **Security Hardening**: Configure and test RLS policies for all tables (currently disabled).
 - [ ] Final mobile responsiveness checks and QA.
 
 ---
