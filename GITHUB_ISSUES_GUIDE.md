@@ -39,7 +39,7 @@ Before beginning any task, ensure the following steps are taken:
 When actively working on an issue:
 
 - **Branching:** specific branches should be created for the issue.
-  *   **Naming Convention**: ' feat/issue-ID-short-description" or "fix/issue-ID-short-description'
+  *   **Naming Convention**: 'feat/issue-ID-short-description" or "fix/issue-ID-short-description"
 - **Commits:** All commit messages must reference the issue ID.
   *.   **Format**: `[#ISSUE_ID] Commit message` (e.g., `[#12] Add responsive styles to header`) 
 

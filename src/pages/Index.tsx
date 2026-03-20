@@ -7,6 +7,7 @@ import Logistics from "@/components/sections/Logistics";
 import FAQ from "@/components/sections/FAQ";
 import FinalCTA from "@/components/sections/FinalCTA";
 import { Shield } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 
 const Index = () => {
   const handleCTAClick = () => {
@@ -30,12 +31,15 @@ const Index = () => {
             <a href="#faq" className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider">FAQ</a>
           </div>
 
-          <button
-            onClick={handleCTAClick}
-            className="text-xs font-medium px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Free Assessment
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleCTAClick}
+              className="hidden sm:block text-[10px] md:text-xs font-bold px-5 py-2.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95"
+            >
+              Free Assessment
+            </button>
+            <UserMenu />
+          </div>
         </div>
       </nav>
 
