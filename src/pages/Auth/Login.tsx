@@ -38,8 +38,8 @@ const Login = () => {
       description: 'You have been logged in.',
     });
     
-    // Redirect logic will be handled by the dashboard route or App state
-    navigate('/');
+    // Redirect to dashboard after successful login
+    navigate('/dashboard');
   };
 
   return (

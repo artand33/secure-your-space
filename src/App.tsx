@@ -8,22 +8,32 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Pages
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
 import Login from "./pages/Auth/Login";
 import Signup from "./pages/Auth/Signup";
 import AuthLayout from "./pages/Auth/AuthLayout";
 import DashboardLayout from "./pages/Dashboard/DashboardLayout";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import UserDashboard from "./pages/Dashboard/UserDashboard";
+import Unauthorized from "./pages/Auth/Unauthorized";
 import Profile from "./pages/Dashboard/Profile";
 
 const queryClient = new QueryClient();
 
 const RoleRedirect = () => {
   const { profile, loading } = useAuth();
-  if (loading) return null;
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0D0D0D] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#E8640A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (!profile) return <Navigate to="/auth/login" />;
+  
   return <Navigate to={profile.role === 'admin' ? "/dashboard/admin" : "/dashboard/user"} />;
 };
 
@@ -35,7 +45,15 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<RoleRedirect />} />
+            {/* Main Public Route */}
+            <Route path="/" element={<Index />} />
+            
+            {/* Top-level Profile Route (Requested) */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
             
             {/* Auth Routes */}
             <Route path="/auth" element={<AuthLayout />}>
@@ -43,12 +61,13 @@ const App = () => (
               <Route path="signup" element={<Signup />} />
             </Route>
 
-            {/* Dashboard Routes */}
+            {/* Dashboard Parent Route */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <DashboardLayout />
               </ProtectedRoute>
             }>
+              <Route index element={<RoleRedirect />} />
               <Route path="admin" element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
@@ -59,12 +78,12 @@ const App = () => (
                   <UserDashboard />
                 </ProtectedRoute>
               } />
+              {/* Also keep this breadcrumb route in case of old links */}
               <Route path="profile" element={<Profile />} />
             </Route>
 
-            {/* Public Service Routes (Mockup) */}
-            <Route path="/services" element={<Index />} />
-
+            <Route path="/admin" element={<Navigate to="/dashboard/admin" />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
