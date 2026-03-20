@@ -172,38 +172,34 @@ Pre-auth lead tracking.
 
 ## 🗺️ Implementation Phases
 
-### Phase 1: Foundation & Auth (2-3 Days)
+### Phase 1: Foundation & Auth Setup (2-3 Days)
 - [ ] Initialize Supabase project & local CLI.
-- [ ] Setup `profiles` table and role ENUMs.
-- [ ] Configure `auth.users` trigger for profile creation.
-- [ ] Implement `/login`, `/signup`, `/logout` pages.
-- [ ] Build `/account-suspended` and Private Route wrappers.
+- [ ] **Database Setup**: Create all tables and role ENUMs (Profiles, Service Types, Jobs, Bookings, etc.).
+- [ ] **Auth Configuration**: Setup `auth.users` trigger for profile creation.
+- [ ] **Auth Pages**: Implement `/login`, `/signup`, `/logout` pages.
+- [ ] **Mockup Dashboards**: Build `/admin/dashboard` and `/user/dashboard` mockups to test auth and roles.
+- [ ] **Access Control**: Implement Private Route wrappers and role-based redirects.
 
-### Phase 2: Admin Core (3-4 Days)
-- [ ] Dashboard layout with Sidebar.
+### Phase 2: Booking System & Client Flow (4-5 Days)
+- [ ] Public Service catalog (Read-only jobs).
+- [ ] Booking creation form: Photo upload (Storage) + Service selection.
+- [ ] **Critical Logic**: User → Client role promotion on first booking confirmation.
+- [ ] Admin Booking Management: Confirm/Reject/Reschedule.
+- [ ] History logs for all booking transitions.
+
+### Phase 3: Admin Core Development (3-4 Days)
+- [ ] Full Dashboard layout with Sidebar.
 - [ ] Service Type CRUD management.
 - [ ] Job Creation engine: Basic details + Availability rules + Slug generation.
 - [ ] Job Listing view with status/type filters.
 - [ ] Audit logging for Job status changes.
 
-### Phase 3: Booking System & Client Flow (4-5 Days)
-- [ ] Public Service catalog (Read-only jobs).
-- [ ] Booking creation form: Photo upload (Storage) + Service selection.
-- [ ] Admin Booking Management: Confirm/Reject/Reschedule.
-- [ ] **Critical Logic**: User → Client role promotion on first confirmation.
-- [ ] History logs for all booking transitions.
-
-### Phase 4: Dashboards & Notification Center (3 Days)
-- [ ] **Admin Dashboard**: KPIs (Total bookings, Pending, Conv. Rate), Calendar View.
-- [ ] **Client Dashboard**: Next appointment, property summary, active bookings.
+### Phase 4: Notification Center & Final Polish (3 Days)
 - [ ] Notification System: Database table + Realtime subscription + Email fallback.
 - [ ] Account management: Profile editing, photo upload, login history.
-
-### Phase 5: Polish, RLS Audit & QA (2 Days)
+- [ ] Dashboard KPIs and Calendar View for Admin.
 - [ ] Comprehensive RLS policy testing for all roles.
-- [ ] Mobile responsiveness check for all dashboard views.
-- [ ] Toast notification integration for all actions.
-- [ ] Final launch checklist and production deployment.
+- [ ] Final mobile responsiveness checks and QA.
 
 ---
 
