@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, LogOut, LayoutDashboard, User } from 'lucide-react';
@@ -23,13 +23,17 @@ const DashboardLayout = () => {
         </div>
         
         <nav className="flex-1 px-4 py-4 space-y-2">
-          <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-[#2E2E2E] text-[#9CA3AF] hover:text-[#E8640A] transition-colors">
-            <LayoutDashboard className="w-5 h-5" />
-            Dashboard
+          <Button asChild variant="ghost" className="w-full justify-start gap-3 hover:bg-[#202020] text-[#9CA3AF] hover:text-[#E8640A] transition-all rounded-xl py-6">
+            <Link to="/dashboard">
+              <LayoutDashboard className="w-5 h-5 transition-transform group-hover:scale-110" />
+              Dashboard
+            </Link>
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-[#2E2E2E] text-[#9CA3AF] hover:text-[#E8640A] transition-colors">
-            <User className="w-5 h-5" />
-            Profile
+          <Button asChild variant="ghost" className="w-full justify-start gap-3 hover:bg-[#202020] text-[#9CA3AF] hover:text-[#E8640A] transition-all rounded-xl py-6">
+            <Link to="/dashboard/profile">
+              <User className="w-5 h-5 transition-transform group-hover:scale-110" />
+              Profile
+            </Link>
           </Button>
         </nav>
 

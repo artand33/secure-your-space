@@ -16,6 +16,7 @@ import AuthLayout from "./pages/Auth/AuthLayout";
 import DashboardLayout from "./pages/Dashboard/DashboardLayout";
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import UserDashboard from "./pages/Dashboard/UserDashboard";
+import Profile from "./pages/Dashboard/Profile";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
                   <UserDashboard />
                 </ProtectedRoute>
               } />
+              <Route path="profile" element={<Profile />} />
             </Route>
 
             {/* Public Service Routes (Mockup) */}
