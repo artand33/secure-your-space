@@ -24,6 +24,9 @@ export type Database = {
           id: string
           job_id: string | null
           property_photo_urls: string[] | null
+          preferred_date: string | null
+          property_address: string | null
+          property_type: string | null
           quote_url: string | null
           rejection_reason: string | null
           status: Database["public"]["Enums"]["booking_status"]
@@ -38,6 +41,9 @@ export type Database = {
           id?: string
           job_id?: string | null
           property_photo_urls?: string[] | null
+          preferred_date?: string | null
+          property_address?: string | null
+          property_type?: string | null
           quote_url?: string | null
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
@@ -52,6 +58,9 @@ export type Database = {
           id?: string
           job_id?: string | null
           property_photo_urls?: string[] | null
+          preferred_date?: string | null
+          property_address?: string | null
+          property_type?: string | null
           quote_url?: string | null
           rejection_reason?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
@@ -140,6 +149,96 @@ export type Database = {
             referencedRelation: "jobs"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      job_history: {
+        Row: {
+          id: string
+          job_id: string | null
+          old_status: Database["public"]["Enums"]["job_status"] | null
+          new_status: Database["public"]["Enums"]["job_status"] | null
+          changed_by: string | null
+          reason: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          job_id?: string | null
+          old_status?: Database["public"]["Enums"]["job_status"] | null
+          new_status?: Database["public"]["Enums"]["job_status"] | null
+          changed_by?: string | null
+          reason?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          job_id?: string | null
+          old_status?: Database["public"]["Enums"]["job_status"] | null
+          new_status?: Database["public"]["Enums"]["job_status"] | null
+          changed_by?: string | null
+          reason?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_history_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      booking_history: {
+        Row: {
+          id: string
+          booking_id: string | null
+          old_status: Database["public"]["Enums"]["booking_status"] | null
+          new_status: Database["public"]["Enums"]["booking_status"] | null
+          changed_by: string | null
+          reason: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          booking_id?: string | null
+          old_status?: Database["public"]["Enums"]["booking_status"] | null
+          new_status?: Database["public"]["Enums"]["booking_status"] | null
+          changed_by?: string | null
+          reason?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          booking_id?: string | null
+          old_status?: Database["public"]["Enums"]["booking_status"] | null
+          new_status?: Database["public"]["Enums"]["booking_status"] | null
+          changed_by?: string | null
+          reason?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_history_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
         ]
       }
       jobs: {

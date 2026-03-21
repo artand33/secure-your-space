@@ -17,40 +17,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Sticky top bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" />
-            <span className="font-bold text-sm">SecureGuard Systems</span>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#services" className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider">Services</a>
-            <a href="#why-us" className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider">Why Choose Us</a>
-            <a href="#faq" className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors uppercase tracking-wider">FAQ</a>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleCTAClick}
-              className="hidden sm:block text-[10px] md:text-xs font-bold px-5 py-2.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95"
-            >
-              Free Assessment
-            </button>
-            <UserMenu />
-          </div>
+      {/* Home Content - Navigation is now handled globally by AppLayout in DashboardLayout.tsx */}
+      <div className="pt-16">
+        <div id="hero">
+          <Hero onCTAClick={handleCTAClick} />
         </div>
-      </nav>
-
-      <div className="pt-14">
-        <Hero onCTAClick={handleCTAClick} />
-        <Services onCTAClick={handleCTAClick} />
+        <div id="services">
+          <Services onCTAClick={handleCTAClick} />
+        </div>
         <WhyUs />
         <Trust />
         <SocialProof />
         <Logistics />
-        <FAQ />
+        <div id="faq">
+          <FAQ />
+        </div>
         <div id="final-cta">
           <FinalCTA onCTAClick={handleCTAClick} />
         </div>

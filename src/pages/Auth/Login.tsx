@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,35 +12,50 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Unified redirect logic: if user is logged in and auth finished loading, go home
+  useEffect(() => {
+    if (user && !authLoading) {
+      console.log('User detected, redirecting to home...');
+      navigate('/');
+    }
+  }, [user, authLoading, navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      toast({
-        title: 'Login failed',
-        description: error.message,
-        variant: 'destructive',
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      setLoading(false);
-      return;
-    }
 
-    toast({
-      title: 'Success',
-      description: 'You have been logged in.',
-    });
-    
-    // Redirect to dashboard after successful login
-    navigate('/dashboard');
+      if (error) {
+        toast({
+          title: 'Login failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      toast({
+        title: 'Success',
+        description: 'You have been logged in.',
+      });
+      
+      // We rely on the useEffect above to handle the navigation after auth state propagates
+    } catch (err) {
+      console.error('Login error:', err);
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,7 +68,7 @@ const Login = () => {
       </div>
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-white">Email</Label>
+          <Label htmlFor="email" title="email" className="text-white">Email</Label>
           <Input
             id="email"
             type="email"
@@ -80,7 +96,7 @@ const Login = () => {
           type="submit" 
           id="login-button"
           className="w-full bg-[#E8640A] hover:bg-[#D55C09] text-white rounded-full h-11 transition-all" 
-          disabled={loading}
+          disabled={loading || authLoading}
         >
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Log in'}
         </Button>

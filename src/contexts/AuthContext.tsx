@@ -21,8 +21,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchingProfile, setFetchingProfile] = useState<string | null>(null);
 
   const fetchProfile = async (userId: string) => {
+    // Prevent duplicate profile fetches for the same user
+    if (fetchingProfile === userId) return;
+    
+    setFetchingProfile(userId);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -39,52 +44,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+        setFetchingProfile(null);
+      }
     }
   };
 
-  useEffect(() => {
-    // Safety timeout to prevent infinite loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 5000);
+  const mountedRef = React.useRef(true);
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
+  useEffect(() => {
+    mountedRef.current = true;
+    
+    // Safety timeout to avoid getting stuck in loading state (e.g. storage lock issue)
+    const safetyTimer = setTimeout(() => {
+      if (mountedRef.current) {
         setLoading(false);
       }
-      clearTimeout(timer);
-    }).catch(err => {
-      console.error('Auth getSession error:', err);
-      setLoading(false);
-      clearTimeout(timer);
-    });
+    }, 10000);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+    let authSubscription: { unsubscribe: () => void } | null = null;
+
+    // Single source of truth for auth state - using onAuthStateChange ONLY 
+    // to avoid storage lock collisions with redundant getSession() calls.
+    const { data } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('Auth transition:', event, currentSession?.user?.email);
+      
+      if (!mountedRef.current) return;
+
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.user) {
+        // Only fetch profile if not already in state or if user changed
+        await fetchProfile(currentSession.user.id);
       } else {
         setProfile(null);
         setLoading(false);
       }
     });
 
+    authSubscription = data.subscription;
+
     return () => {
-      subscription.unsubscribe();
-      clearTimeout(timer);
+      mountedRef.current = false;
+      if (authSubscription) authSubscription.unsubscribe();
+      clearTimeout(safetyTimer);
     };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      setLoading(true);
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Signout error:', err);
+    } finally {
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setFetchingProfile(null);
+      setLoading(false);
+    }
   };
 
   const refreshProfile = async () => {

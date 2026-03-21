@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, Outlet } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,10 +19,19 @@ import UserDashboard from "./pages/Dashboard/UserDashboard";
 import Unauthorized from "./pages/Auth/Unauthorized";
 import Profile from "./pages/Dashboard/Profile";
 
+import ServiceTypes from "./pages/Dashboard/Admin/ServiceTypes";
+import JobUnits from "./pages/Dashboard/Admin/JobUnits";
+import AllBookings from "./pages/Dashboard/Admin/AllBookings";
+import Enquiries from "./pages/Dashboard/Admin/Enquiries";
+import SettingsPage from "./pages/Dashboard/Settings";
+import JobDiscovery from "./pages/Jobs/JobDiscovery";
+import BookingForm from "./pages/Jobs/BookingForm";
+import Notifications from "./pages/Dashboard/Notifications";
+
 const queryClient = new QueryClient();
 
 const RoleRedirect = () => {
-  const { profile, loading } = useAuth();
+  const { user, loading } = useAuth();
   
   if (loading) {
     return (
@@ -32,9 +41,8 @@ const RoleRedirect = () => {
     );
   }
 
-  if (!profile) return <Navigate to="/auth/login" />;
-  
-  return <Navigate to={profile.role === 'admin' ? "/dashboard/admin" : "/dashboard/user"} />;
+  // Everyone lands on the beautiful landing page first
+  return <Navigate to="/" />;
 };
 
 const App = () => (
@@ -45,46 +53,88 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Main Public Route */}
-            <Route path="/" element={<Index />} />
-            
-            {/* Top-level Profile Route (Requested) */}
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } />
-            
-            {/* Auth Routes */}
+            {/* Main Public Route - Now with the shared layout */}
+            <Route element={<DashboardLayout />}>
+              <Route path="/" element={<Index />} />
+              
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/unauthorized" element={<Unauthorized />} />
+
+              {/* Management Routes wrapped in the same layout */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Outlet />
+                </ProtectedRoute>
+              }>
+                <Route index element={<RoleRedirect />} />
+                <Route path="admin" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="user" element={
+                  <ProtectedRoute>
+                    <UserDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="settings" element={
+                  <ProtectedRoute>
+                    <SettingsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="jobs" element={
+                  <ProtectedRoute>
+                    <JobDiscovery />
+                  </ProtectedRoute>
+                } />
+                <Route path="jobs/:jobId/book" element={
+                  <ProtectedRoute>
+                    <BookingForm />
+                  </ProtectedRoute>
+                } />
+                <Route path="notifications" element={
+                  <ProtectedRoute>
+                    <Notifications />
+                  </ProtectedRoute>
+                } />
+              </Route>
+
+              {/* Admin-only Management views */}
+              <Route path="/admin/services" element={
+                <ProtectedRoute requiredRole="admin">
+                  <ServiceTypes />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/jobs" element={
+                <ProtectedRoute requiredRole="admin">
+                  <JobUnits />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/bookings" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AllBookings />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/enquiries" element={
+                <ProtectedRoute requiredRole="admin">
+                  <Enquiries />
+                </ProtectedRoute>
+              } />
+            </Route>
+
+            {/* Auth Routes (Separate full-page layout) */}
             <Route path="/auth" element={<AuthLayout />}>
               <Route path="login" element={<Login />} />
               <Route path="signup" element={<Signup />} />
             </Route>
 
-            {/* Dashboard Parent Route */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<RoleRedirect />} />
-              <Route path="admin" element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="user" element={
-                <ProtectedRoute>
-                  <UserDashboard />
-                </ProtectedRoute>
-              } />
-              {/* Also keep this breadcrumb route in case of old links */}
-              <Route path="profile" element={<Profile />} />
-            </Route>
-
             <Route path="/admin" element={<Navigate to="/dashboard/admin" />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </BrowserRouter>
         <Analytics />

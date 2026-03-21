@@ -188,7 +188,7 @@ Pre-auth lead tracking.
 - [ ] History logs for all booking transitions.
 
 ### Phase 3: Admin Core Development (3-4 Days)
-- [ ] Full Dashboard layout with Sidebar.
+- [x] Full Dashboard layout with Sidebar. (Done ✅ - [#10])
 - [ ] Service Type CRUD management.
 - [ ] Job Creation engine: Basic details + Availability rules + Slug generation.
 - [ ] Job Listing view with status/type filters.
@@ -202,7 +202,7 @@ Pre-auth lead tracking.
   - [x] Role display and status alerts (Rejection reasons).
   - [ ] Login history view.
 - [ ] Dashboard KPIs and Calendar View for Admin.
-- [!] **Security Hardening**: Configure and test RLS policies for all tables (currently disabled).
+- [x] **Security Hardening**: Configure and test RLS policies for all tables. (Done ✅ - [#11])
 - [ ] Final mobile responsiveness checks and QA.
 
 ---
