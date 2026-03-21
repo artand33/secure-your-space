@@ -8,7 +8,7 @@ type Profile = Database['public']['Tables']['profiles']['Row'];
 interface AuthContextType {
   session: Session | null;
   user: User | null;
-  profile: Profile | null;
+  profile: Profile | null | undefined;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -19,92 +19,73 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
-  const [fetchingProfile, setFetchingProfile] = useState<string | null>(null);
+  const mountedRef = React.useRef(true);
 
-  const fetchProfile = async (userId: string) => {
-    // Prevent duplicate profile fetches for the same user
-    if (fetchingProfile === userId) return;
-    
-    setFetchingProfile(userId);
+  const fetchProfile = async (userId?: string) => {
+    setLoading(true);
     try {
+      if (!userId) {
+        setProfile(null);
+        return;
+      }
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
+      if (!mountedRef.current) return;
+
       if (error) {
-        console.warn('Profile record not found or error:', error.message);
+        console.warn('Profile fetch error:', error.message);
         setProfile(null);
       } else {
+        console.log('Profile fetched:', data);
         setProfile(data);
       }
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
+      if (mountedRef.current) setProfile(null);
     } finally {
-      if (mountedRef.current) {
-        setLoading(false);
-        setFetchingProfile(null);
-      }
+      if (mountedRef.current) setLoading(false);
     }
   };
 
-  const mountedRef = React.useRef(true);
-
   useEffect(() => {
     mountedRef.current = true;
-    
-    // Safety timeout to avoid getting stuck in loading state (e.g. storage lock issue)
-    const safetyTimer = setTimeout(() => {
-      if (mountedRef.current) {
-        setLoading(false);
-      }
-    }, 10000);
 
-    let authSubscription: { unsubscribe: () => void } | null = null;
-
-    // Single source of truth for auth state - using onAuthStateChange ONLY 
-    // to avoid storage lock collisions with redundant getSession() calls.
     const { data } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log('Auth transition:', event, currentSession?.user?.email);
-      
       if (!mountedRef.current) return;
 
+      console.log('Auth event:', event, currentSession?.user?.email);
+
+      // onAuthStateChange is the single source of truth — update everything here
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        // Only fetch profile if not already in state or if user changed
-        await fetchProfile(currentSession.user.id);
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
+      await fetchProfile(currentSession?.user?.id);
     });
-
-    authSubscription = data.subscription;
 
     return () => {
       mountedRef.current = false;
-      if (authSubscription) authSubscription.unsubscribe();
-      clearTimeout(safetyTimer);
+      data.subscription.unsubscribe();
     };
   }, []);
 
+  // signOut only triggers the Supabase call — onAuthStateChange handles state cleanup
   const signOut = async () => {
     try {
-      setLoading(true);
       await supabase.auth.signOut();
     } catch (err) {
       console.error('Signout error:', err);
-    } finally {
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      setFetchingProfile(null);
-      setLoading(false);
+      // Manual cleanup only if signOut itself threw
+      if (mountedRef.current) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+      }
     }
   };
 

@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { 
+  Loader2,
   User as UserIcon, 
   LogOut, 
   LogIn, 
@@ -26,8 +27,23 @@ import {
 import { toast } from 'sonner';
 
 const UserMenu = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
+
+  console.log('[UserMenu Tracker]', {
+    loading,
+    hasProfile: !!profile,
+    profileObject: profile,
+    role: profile?.role
+  });
+
+  if (loading) {
+    return (
+      <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border-2 border-transparent">
+        <Loader2 className="w-5 h-5 animate-spin text-[#9CA3AF]" />
+      </Button>
+    );
+  }
 
   if (!user) {
     return (
@@ -42,25 +58,19 @@ const UserMenu = () => {
     );
   }
 
-  const handleLogout = async (e: React.Event) => {
-    // Prevent default to ensure our redirect logic takes precedence
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    try {
-      // We don't await signOut here to avoid potential hangs during window unload
-      signOut();
-      toast.success('Logging out...');
-      // Use window.location.href for the most reliable external redirect
-      setTimeout(() => {
-        window.location.href = '/auth/login';
-      }, 100);
-    } catch (err) {
-      window.location.href = '/auth/login';
-    }
-  };
+  const handleLogout = async (e: Event | React.SyntheticEvent) => {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  try {
+    await signOut();
+    toast.success('Logged out successfully');
+    window.location.href = '/auth/login';
+  } catch (err) {
+    window.location.href = '/auth/login';
+  }
+};
 
   const userInitial = profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U';
   // Check role carefully - support case-insensitive just in case database representation differs
