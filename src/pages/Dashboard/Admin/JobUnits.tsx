@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Briefcase, Plus, Loader2, Edit2, Trash2, MapPin, Tag, Calendar, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import JobDialog from '@/components/admin/JobDialog';
+import JobAvailabilityDialog from '@/components/admin/JobAvailabilityDialog';
 import { Badge } from '@/components/ui/badge';
 
 const statusColors: Record<string, string> = {
@@ -19,6 +20,8 @@ const JobUnits = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<any>(null);
+  const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false);
+  const [availabilityJob, setAvailabilityJob] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -232,6 +235,14 @@ const JobUnits = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
+                    onClick={() => { setAvailabilityJob(job); setIsAvailabilityOpen(true); }}
+                    className="text-white hover:text-[#E8640A] h-8 w-8"
+                  >
+                    <Calendar className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
                     onClick={() => handleEdit(job)}
                     className="text-white hover:text-primary h-8 w-8"
                   >
@@ -309,6 +320,12 @@ const JobUnits = () => {
         onSubmit={handleSubmit}
         initialData={editingJob}
         title={editingJob ? 'Edit Job Unit' : 'Create New Job Unit'}
+      />
+
+      <JobAvailabilityDialog
+        open={isAvailabilityOpen}
+        onOpenChange={setIsAvailabilityOpen}
+        job={availabilityJob}
       />
     </div>
   );

@@ -189,8 +189,8 @@ Pre-auth lead tracking.
 
 ### Phase 3: Admin Core Development (3-4 Days)
 - [x] Full Dashboard layout with Sidebar. (Done ✅ - [#10])
-- [ ] Service Type CRUD management.
-- [ ] Job Creation engine: Basic details + Availability rules + Slug generation.
+- [x] Service Type CRUD management.
+- [x] Job Creation engine: Basic details + Availability rules + Slug generation.
 - [ ] Job Listing view with status/type filters.
 - [ ] Audit logging for Job status changes.
 

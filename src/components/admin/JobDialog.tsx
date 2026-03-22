@@ -27,8 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { Plus, Loader2, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const formSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
@@ -67,6 +69,46 @@ const JobDialog = ({
       pricing_note: '',
     },
   });
+
+  const queryClient = useQueryClient();
+  const [isCreatingService, setIsCreatingService] = useState(false);
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newServiceDesc, setNewServiceDesc] = useState('');
+  const [isSavingService, setIsSavingService] = useState(false);
+
+  const handleCreateService = async () => {
+    if (!newServiceName.trim()) {
+      toast.error('Service category name is required');
+      return;
+    }
+    setIsSavingService(true);
+    try {
+      const { data, error } = await supabase
+        .from('service_types')
+        .insert([{ 
+          name: newServiceName.trim(), 
+          description: newServiceDesc.trim() || undefined, 
+          icon_name: 'Server', 
+          is_active: true, 
+          display_order: 99 
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      await queryClient.invalidateQueries({ queryKey: ['service_types_list'] });
+      form.setValue('service_type_id', data.id);
+      setIsCreatingService(false);
+      setNewServiceName('');
+      setNewServiceDesc('');
+      toast.success('Category created & auto-selected!');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create category');
+    } finally {
+      setIsSavingService(false);
+    }
+  };
 
   const { data: serviceTypes } = useQuery({
     queryKey: ['service_types_list'],
@@ -165,9 +207,19 @@ const JobDialog = ({
                 control={form.control}
                 name="service_type_id"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="relative">
                     <FormLabel>Service Category</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select 
+                      onValueChange={(val) => {
+                        if (val === 'create_new') {
+                          setIsCreatingService(!isCreatingService);
+                        } else {
+                          field.onChange(val);
+                          setIsCreatingService(false);
+                        }
+                      }} 
+                      value={isCreatingService ? 'create_new' : field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-[#0D0D0D] border-[#2E2E2E]">
                           <SelectValue placeholder="Select type" />
@@ -179,9 +231,52 @@ const JobDialog = ({
                             {type.name}
                           </SelectItem>
                         ))}
+                        <div className="h-px bg-[#2E2E2E] my-1" />
+                        <SelectItem value="create_new" className="text-[#E8640A] focus:bg-[#E8640A]/10 focus:text-[#E8640A]">
+                          <span className="flex items-center font-bold relative z-10 pointer-events-none">
+                            <Plus className="w-4 h-4 mr-2" />
+                            {isCreatingService ? 'Cancel Creation' : 'Create New Category +'}
+                          </span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
+
+                    {isCreatingService && (
+                      <div className="absolute z-50 top-full left-0 w-full mt-2 bg-[#202020] border border-[#E8640A]/30 rounded-xl p-3 shadow-2xl animate-in slide-in-from-top-2">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] font-bold text-[#E8640A] uppercase tracking-widest">New Category Inline</span>
+                            <button type="button" onClick={() => setIsCreatingService(false)} className="text-[#9CA3AF] hover:text-white transition-colors">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <Input 
+                            placeholder="Category Name (e.g. Access Control)" 
+                            className="h-9 bg-[#1A1A1A] border-[#2E2E2E] text-white focus:border-[#E8640A]/50 text-sm"
+                            value={newServiceName}
+                            onChange={(e) => setNewServiceName(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateService(); } }}
+                            autoFocus
+                          />
+                          <Textarea 
+                            placeholder="Short description (optional)..." 
+                            className="min-h-[60px] bg-[#1A1A1A] border-[#2E2E2E] text-white focus:border-[#E8640A]/50 text-sm resize-none"
+                            value={newServiceDesc}
+                            onChange={(e) => setNewServiceDesc(e.target.value)}
+                          />
+                          <Button 
+                            type="button" 
+                            onClick={handleCreateService} 
+                            disabled={isSavingService}
+                            className="w-full h-9 bg-[#E8640A] hover:bg-[#D55C09] text-white font-bold"
+                          >
+                            {isSavingService ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                            {isSavingService ? 'Saving...' : 'Save & Select'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </FormItem>
                 )}
               />
