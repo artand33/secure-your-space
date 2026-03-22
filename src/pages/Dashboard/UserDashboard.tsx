@@ -3,12 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Package, 
-  Loader2, 
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Package,
+  Loader2,
   AlertCircle,
   ExternalLink,
   ChevronRight,
@@ -39,32 +39,38 @@ interface Booking {
 }
 
 const UserDashboard = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const { data: bookings, isLoading } = useQuery({
+  const { data: bookings, isPending, isFetching } = useQuery({
     queryKey: ['user-bookings', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          jobs:job_id (
-            title, 
-            location,
-            service_types:service_type_id (name)
-          )
-        `)
-        .eq('client_id', user.id)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('bookings')
+          .select(`
+        *,
+        jobs:job_id (
+          title, 
+          location,
+          service_types:service_type_id (name)
+        )
+      `)
+          .eq('client_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as Booking[];
+        if (error) return [];
+        return (data as Booking[]) || [];
+      } catch {
+        return [];
+      }
     },
-    enabled: !!user
+    enabled: !!user && !authLoading,
+    staleTime: 30000,
+    gcTime: 0,
+    retry: 1,
   });
-
   const getStatusBadge = (status: Booking['status']) => {
     switch (status) {
       case 'pending': return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Pending</Badge>;
@@ -84,12 +90,12 @@ const UserDashboard = () => {
         <div className="space-y-1 text-center md:text-left">
           <h2 className="text-3xl font-bold text-white tracking-tight">Hello, {profile?.full_name?.split(' ')[0] ?? 'User'}!</h2>
           <p className="text-[#9CA3AF]">
-            {activeBookings.length > 0 
-              ? `You have ${activeBookings.length} active service bookings.` 
+            {activeBookings.length > 0
+              ? `You have ${activeBookings.length} active service bookings.`
               : "Welcome to your personal dashboard."}
           </p>
         </div>
-        <Button 
+        <Button
           onClick={() => navigate('/dashboard/jobs')}
           className="bg-[#E8640A] hover:bg-[#D55C09] text-white rounded-full px-8 h-12 font-semibold shadow-lg shadow-[#E8640A]/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
         >
@@ -105,12 +111,12 @@ const UserDashboard = () => {
               <Calendar className="w-5 h-5 text-[#E8640A]" />
               Your Service History
             </h3>
-            
-            {isLoading ? (
+
+            {authLoading ? (
               <div className="p-12 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl flex items-center justify-center">
                 <Loader2 className="w-6 h-6 text-[#E8640A] animate-spin" />
               </div>
-            ) : bookings?.length === 0 ? (
+            ) : !bookings || bookings.length === 0 ? (
               <div className="p-16 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl text-center space-y-4 shadow-xl">
                 <div className="w-16 h-16 rounded-full bg-[#202020] flex items-center justify-center mx-auto text-[#4B4B4B]">
                   <Package className="w-8 h-8" />
@@ -137,22 +143,22 @@ const UserDashboard = () => {
                             </div>
                             {getStatusBadge(booking.status)}
                           </div>
-                          
+
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#2E2E2E] pt-4">
-                            <InfoItem 
-                              icon={<Calendar className="w-4 h-4" />} 
-                              label="Date" 
-                              value={booking.preferred_date ? format(new Date(booking.preferred_date), 'MMM dd, yyyy') : 'TBD'} 
+                            <InfoItem
+                              icon={<Calendar className="w-4 h-4" />}
+                              label="Date"
+                              value={booking.preferred_date ? format(new Date(booking.preferred_date), 'MMM dd, yyyy') : 'TBD'}
                             />
-                            <InfoItem 
-                              icon={<MapPin className="w-4 h-4" />} 
-                              label="Property" 
-                              value={booking.property_address || 'Not specified'} 
+                            <InfoItem
+                              icon={<MapPin className="w-4 h-4" />}
+                              label="Property"
+                              value={booking.property_address || 'Not specified'}
                             />
-                            <InfoItem 
-                              icon={<ShieldCheck className="w-4 h-4" />} 
-                              label="Service" 
-                              value={booking.jobs.service_types?.name || 'Standard'} 
+                            <InfoItem
+                              icon={<ShieldCheck className="w-4 h-4" />}
+                              label="Service"
+                              value={booking.jobs.service_types?.name || 'Standard'}
                             />
                           </div>
 
@@ -195,20 +201,20 @@ const UserDashboard = () => {
                   <p className="text-sm text-white font-black capitalize tracking-tight">{profile?.role}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4 px-1">
                 <p className="text-xs text-[#9CA3AF] leading-relaxed">
-                  {profile?.role === 'user' 
-                    ? "Complete your first booking to be upgraded to a Client role and unlock prioritized scheduling." 
+                  {profile?.role === 'user'
+                    ? "Complete your first booking to be upgraded to a Client role and unlock prioritized scheduling."
                     : "You are a registered Client. You have access to detailed reports and historical property data."}
                 </p>
-                
+
                 <div className="pt-4 border-t border-[#2E2E2E]">
                   <div className="flex items-center justify-between mb-2">
-                     <p className="text-[10px] text-[#4B4B4B] uppercase tracking-widest font-black">Membership Tier</p>
-                     <span className="text-[10px] text-[#E8640A] font-bold">
-                        {profile?.role === 'user' ? 'Lvl 1' : 'Lvl 2'}
-                     </span>
+                    <p className="text-[10px] text-[#4B4B4B] uppercase tracking-widest font-black">Membership Tier</p>
+                    <span className="text-[10px] text-[#E8640A] font-bold">
+                      {profile?.role === 'user' ? 'Lvl 1' : 'Lvl 2'}
+                    </span>
                   </div>
                   <div className="h-1.5 w-full bg-[#2E2E2E] rounded-full overflow-hidden p-[2px]">
                     <div className={`h-full rounded-full bg-gradient-to-r from-[#E8640A] to-[#FF8C3A] transition-all duration-1000 glass-glow ${profile?.role === 'user' ? 'w-1/3 shadow-[0_0_10px_rgba(232,100,10,0.5)]' : 'w-full shadow-[0_0_15px_rgba(232,100,10,0.8)]'}`} />

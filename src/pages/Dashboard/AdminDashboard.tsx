@@ -4,7 +4,7 @@ import { Users, Calendar, Briefcase, AlertTriangle } from 'lucide-react';
 
 const AdminDashboard = () => {
   return (
-    <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Total Users" value="128" icon={<Users className="w-5 h-5" />} trend="+12% from last month" />
         <StatCard title="Active Jobs" value="24" icon={<Briefcase className="w-5 h-5" />} trend="+3 ongoing today" />
@@ -62,7 +62,15 @@ const AdminDashboard = () => {
   );
 };
 
-const StatCard = ({ title, value, icon, trend, highlight }: any) => (
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  trend: string;
+  highlight?: boolean;
+}
+
+const StatCard = ({ title, value, icon, trend, highlight }: StatCardProps) => (
   <Card className={`bg-[#1A1A1A] border-[#2E2E2E] overflow-hidden group transition-all duration-300 hover:translate-y-[-4px] ${highlight ? 'ring-1 ring-[#E8640A]/50 shadow-[0_0_20px_rgba(232,100,10,0.1)]' : 'shadow-lg'}`}>
     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-6">
       <CardTitle className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">{title}</CardTitle>

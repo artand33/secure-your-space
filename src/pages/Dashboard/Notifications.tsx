@@ -2,13 +2,13 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Bell, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Info, 
-  X, 
-  Loader2, 
+import {
+  Bell,
+  CheckCircle2,
+  AlertTriangle,
+  Info,
+  X,
+  Loader2,
   Trash2,
   CalendarCheck,
   Briefcase,
@@ -34,11 +34,11 @@ interface Notification {
 }
 
 const Notifications = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: notifications, isLoading } = useQuery({
+  const { data: notifications, isPending } = useQuery({
     queryKey: ['notifications', user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -48,10 +48,13 @@ const Notifications = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) return [];
       return data as Notification[];
     },
-    enabled: !!user
+    enabled: !!user && !authLoading,
+    staleTime: 30000,
+    gcTime: 0,
+    retry: 1,
   });
 
   const markAsReadMutation = useMutation({
@@ -109,14 +112,12 @@ const Notifications = () => {
     if (!notification.is_read) {
       markAsReadMutation.mutate(notification.id);
     }
-
-    // Optional: Navigate based on metadata
     if (notification.metadata?.booking_id) {
-       // Logic to go to booking detail or similar
+      // Logic to go to booking detail or similar
     }
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 text-[#E8640A] animate-spin" />
@@ -144,9 +145,9 @@ const Notifications = () => {
           <p className="text-[#9CA3AF] mt-2">Stay updated on your booking status and account activity.</p>
         </div>
         {unreadCount > 0 && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="text-[#9CA3AF] hover:text-white hover:bg-white/5 rounded-full"
             onClick={() => markAllReadMutation.mutate()}
             disabled={markAllReadMutation.isPending}
@@ -157,7 +158,7 @@ const Notifications = () => {
       </div>
 
       <div className="space-y-4">
-        {notifications?.length === 0 ? (
+        {!notifications || notifications.length === 0 ? (
           <div className="p-16 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl text-center space-y-4 shadow-xl">
             <div className="w-16 h-16 rounded-full bg-[#202020] flex items-center justify-center mx-auto text-[#4B4B4B]">
               <Bell className="w-8 h-8" />
@@ -169,20 +170,19 @@ const Notifications = () => {
           </div>
         ) : (
           notifications?.map((notification) => (
-            <Card 
-              key={notification.id} 
+            <Card
+              key={notification.id}
               className={`relative bg-[#1A1A1A] border-[#2E2E2E] p-5 overflow-hidden group transition-all duration-300 hover:border-[#E8640A]/30 cursor-pointer ${!notification.is_read ? 'border-l-4 border-l-[#E8640A]' : ''}`}
               onClick={() => handleNotificationClick(notification)}
             >
               <div className="flex gap-4">
-                <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${
-                  notification.type === 'success' ? 'bg-emerald-500/10' :
+                <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${notification.type === 'success' ? 'bg-emerald-500/10' :
                   notification.type === 'warning' ? 'bg-yellow-500/10' :
-                  notification.type === 'error' ? 'bg-red-500/10' : 'bg-blue-500/10'
-                }`}>
+                    notification.type === 'error' ? 'bg-red-500/10' : 'bg-blue-500/10'
+                  }`}>
                   {getIcon(notification.type)}
                 </div>
-                
+
                 <div className="flex-1 space-y-1 pr-8">
                   <div className="flex items-center justify-between">
                     <h3 className={`font-bold ${!notification.is_read ? 'text-white' : 'text-[#9CA3AF]'}`}>
@@ -196,17 +196,17 @@ const Notifications = () => {
                   <p className="text-sm text-[#9CA3AF] leading-relaxed">
                     {notification.message}
                   </p>
-                  
+
                   {notification.metadata?.booking_id && (
-                     <div className="pt-3">
-                        <Button variant="outline" size="sm" className="h-8 border-[#2E2E2E] text-xs hover:border-[#E8640A]/50 hover:bg-[#E8640A]/5 rounded-full" onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/dashboard/user'); // Or appropriate path
-                        }}>
-                          View Booking Details
-                          <ChevronRight className="w-3 h-3 ml-1" />
-                        </Button>
-                     </div>
+                    <div className="pt-3">
+                      <Button variant="outline" size="sm" className="h-8 border-[#2E2E2E] text-xs hover:border-[#E8640A]/50 hover:bg-[#E8640A]/5 rounded-full" onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/dashboard/user');
+                      }}>
+                        View Booking Details
+                        <ChevronRight className="w-3 h-3 ml-1" />
+                      </Button>
+                    </div>
                   )}
                 </div>
 
@@ -214,9 +214,9 @@ const Notifications = () => {
                   {!notification.is_read && (
                     <Circle className="w-2 h-2 fill-[#E8640A] text-[#E8640A]" />
                   )}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     className="h-8 w-8 text-[#4B4B4B] hover:text-red-500 hover:bg-red-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -235,9 +235,8 @@ const Notifications = () => {
   );
 };
 
-// Simple dummy Clock component to satisfy icons
 const Clock = ({ className }: { className?: string }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
 );
 
 export default Notifications;

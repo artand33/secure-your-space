@@ -28,11 +28,19 @@ import JobDiscovery from "./pages/Jobs/JobDiscovery";
 import BookingForm from "./pages/Jobs/BookingForm";
 import Notifications from "./pages/Dashboard/Notifications";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const RoleRedirect = () => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0D0D0D] flex items-center justify-center">
@@ -56,7 +64,7 @@ const App = () => (
             {/* Main Public Route - Now with the shared layout */}
             <Route element={<DashboardLayout />}>
               <Route path="/" element={<Index />} />
-              
+
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <Profile />

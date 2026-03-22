@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { 
-  ShieldCheck, 
-  LogOut, 
-  LayoutDashboard, 
-  User, 
-  Briefcase, 
-  Server, 
+import {
+  ShieldCheck,
+  LogOut,
+  LayoutDashboard,
+  User,
+  Briefcase,
+  Server,
   HelpCircle,
   Settings,
   Home,
@@ -34,22 +34,15 @@ const DashboardLayout = () => {
   const isHomePage = location.pathname === '/';
 
   const handleSignOut = async () => {
-    try {
-      setOpen(false);
-      await signOut();
-      toast.success('Signed out successfully');
-      // Force exit app
-      window.location.replace('/auth/login');
-    } catch (err: any) {
-      toast.error('Error signing out');
-      console.error(err);
-    }
+    setOpen(false);
+    await signOut();
+    window.location.href = '/auth/login';
   };
 
   // Close sidebar on path change and handle scrolling
   useEffect(() => {
     setOpen(false);
-    
+
     // Handle hash scrolling
     if (location.hash) {
       const id = location.hash.replace('#', '');
@@ -83,16 +76,16 @@ const DashboardLayout = () => {
         <ShieldCheck className="w-8 h-8 text-[#E8640A]" />
         <span className="font-bold text-xl tracking-tight italic">SG SYSTEMS</span>
       </div>
-      
+
       <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto scrollbar-hide">
         <div className="text-[10px] font-bold text-[#4B4B4B] uppercase tracking-[0.2em] mb-6 px-3">Navigation Menu</div>
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path || (location.pathname === '/' && link.path.startsWith('/#') && location.hash === link.path.replace('/', ''));
           return (
-            <Button 
+            <Button
               key={link.path}
-              asChild 
-              variant="ghost" 
+              asChild
+              variant="ghost"
               className={`w-full justify-start gap-4 hover:bg-[#202020] transition-all rounded-xl py-7 ${isActive ? 'bg-[#202020] text-[#E8640A]' : 'text-[#9CA3AF] hover:text-[#E8640A]'}`}
             >
               <Link to={link.path}>
@@ -105,8 +98,8 @@ const DashboardLayout = () => {
       </nav>
 
       <div className="p-4 border-t border-[#2E2E2E] bg-[#141414]">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={handleSignOut}
           className="w-full justify-start gap-4 text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors py-7 rounded-xl"
         >
@@ -132,10 +125,10 @@ const DashboardLayout = () => {
               <SidebarContent />
             </SheetContent>
           </Sheet>
-          
+
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-9 h-9 rounded-lg bg-[#E8640A]/10 flex items-center justify-center border border-[#E8640A]/20">
-               <ShieldCheck className="w-6 h-6 text-[#E8640A]" />
+              <ShieldCheck className="w-6 h-6 text-[#E8640A]" />
             </div>
             <span className="font-bold text-lg hidden sm:block tracking-tighter italic uppercase">SECUREGUARD SYSTEMS</span>
           </Link>
@@ -143,8 +136,8 @@ const DashboardLayout = () => {
 
         <div className="flex items-center gap-3 md:gap-6">
           {!isHomePage && (
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => navigate('/')}
               className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-black text-[#9CA3AF] hover:text-white hover:bg-white/5"
             >
@@ -154,12 +147,12 @@ const DashboardLayout = () => {
           )}
 
           <div className="h-8 w-px bg-white/10 hidden sm:block mx-1" />
-          
+
           <NotificationBell />
           <UserMenu />
         </div>
       </header>
-      
+
       {/* Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative">
         <div className="flex-1 overflow-auto animate-in fade-in slide-in-from-bottom-2 duration-700 p-4 md:p-12 lg:p-16">
@@ -194,9 +187,9 @@ const NotificationBell = () => {
   });
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
+    <Button
+      variant="ghost"
+      size="icon"
       className="relative text-[#9CA3AF] hover:text-[#E8640A] hover:bg-white/5 border border-[#2E2E2E] rounded-xl w-11 h-11 shrink-0"
       onClick={() => navigate('/dashboard/notifications')}
     >

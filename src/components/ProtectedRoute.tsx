@@ -22,9 +22,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     return <Navigate to="/auth/login" />;
   }
 
-  if (requiredRole && profile?.role !== requiredRole && profile?.role !== 'admin') {
-    // If they aren't authorized for this role and aren't an admin, send them to their own dashboard
-    return <Navigate to={profile?.role === 'user' ? '/dashboard/user' : '/dashboard/admin'} />;
+  if (requiredRole === 'admin' && profile?.role !== 'admin') {
+    return <Navigate to="/dashboard/user" />;
   }
 
   return <>{children}</>;

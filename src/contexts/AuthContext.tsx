@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/supabase';
@@ -21,71 +21,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
-  const mountedRef = React.useRef(true);
+  const isMounted = useRef(true);
 
   const fetchProfile = async (userId?: string) => {
-    setLoading(true);
+    if (!userId) {
+      setProfile(null);
+      return;
+    }
     try {
-      if (!userId) {
-        setProfile(null);
-        return;
-      }
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
-
-      if (!mountedRef.current) return;
-
+      if (!isMounted.current) return;
       if (error) {
         console.warn('Profile fetch error:', error.message);
         setProfile(null);
       } else {
-        console.log('Profile fetched:', data);
         setProfile(data);
       }
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
-      if (mountedRef.current) setProfile(null);
-    } finally {
-      if (mountedRef.current) setLoading(false);
+      if (isMounted.current) setProfile(null);
     }
   };
 
   useEffect(() => {
-    mountedRef.current = true;
+    isMounted.current = true;
 
-    const { data } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      if (!mountedRef.current) return;
+    // Hard safety net — no matter what, loading stops after 8 seconds
+    const hardTimeout = setTimeout(() => {
+      if (isMounted.current) {
+        console.warn('Hard safety timeout — forcing loading to false');
+        setLoading(false);
+      }
+    }, 8000);
 
-      console.log('Auth event:', event, currentSession?.user?.email);
-
-      // onAuthStateChange is the single source of truth — update everything here
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      await fetchProfile(currentSession?.user?.id);
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (!isMounted.current) return;
+      console.log('Auth event (non-awaited):', event, newSession?.user?.email);
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      
+      if (newSession?.user) {
+        // Fire and forget! Do NOT await this inside the listener.
+        // GoTrue awaits listeners while holding a lock. If we await a .select() here, 
+        // the client deadlocks trying to fetch the token header via getSession().
+        fetchProfile(newSession.user.id).then(() => {
+          if (isMounted.current) {
+            clearTimeout(hardTimeout);
+            setLoading(false);
+          }
+        });
+      } else {
+        setProfile(null);
+        clearTimeout(hardTimeout);
+        if (isMounted.current) setLoading(false);
+      }
     });
 
     return () => {
-      mountedRef.current = false;
-      data.subscription.unsubscribe();
+      isMounted.current = false;
+      clearTimeout(hardTimeout);
+      authListener.subscription.unsubscribe();
     };
   }, []);
 
-  // signOut only triggers the Supabase call — onAuthStateChange handles state cleanup
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-    } catch (err) {
-      console.error('Signout error:', err);
-      // Manual cleanup only if signOut itself threw
-      if (mountedRef.current) {
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-      }
+    } finally {
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setLoading(false);
+      window.location.href = '/auth/login';
     }
   };
 
