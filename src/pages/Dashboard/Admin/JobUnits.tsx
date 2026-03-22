@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import JobDialog from '@/components/admin/JobDialog';
 import JobAvailabilityDialog from '@/components/admin/JobAvailabilityDialog';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const statusColors: Record<string, string> = {
   draft: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
@@ -24,9 +25,10 @@ const JobUnits = () => {
   const [availabilityJob, setAvailabilityJob] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
 
   const { data: jobs, isLoading } = useQuery({
-    queryKey: ['job_units_admin', statusFilter, searchQuery],
+    queryKey: ['job_units_admin', statusFilter, searchQuery, typeFilter],
     queryFn: async () => {
       let query = supabase
         .from('jobs')
@@ -42,6 +44,10 @@ const JobUnits = () => {
       
       if (searchQuery) {
         query = query.ilike('title', `%${searchQuery}%`);
+      }
+
+      if (typeFilter !== 'all') {
+        query = query.eq('service_type_id', typeFilter);
       }
 
       const { data, error } = await query;
@@ -198,6 +204,19 @@ const JobUnits = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#1A1A1A] border border-[#2E2E2E] rounded-xl px-4 py-2 text-white placeholder:text-[#4B4B4B] focus:outline-none focus:border-[#E8640A]/50 transition-all font-inter"
             />
+         </div>
+         <div className="w-[200px] shrink-0">
+           <Select value={typeFilter} onValueChange={setTypeFilter}>
+             <SelectTrigger className="w-full bg-[#1A1A1A] border-[#2E2E2E] rounded-xl text-white font-inter focus:border-[#E8640A]/50 focus:ring-0">
+               <SelectValue placeholder="All Categories" />
+             </SelectTrigger>
+             <SelectContent className="bg-[#1A1A1A] border-[#2E2E2E] text-white">
+               <SelectItem value="all" className="focus:bg-[#E8640A]/20">All Categories</SelectItem>
+               {serviceTypes?.map(type => (
+                 <SelectItem key={type.id} value={type.id} className="focus:bg-[#E8640A]/20">{type.name}</SelectItem>
+               ))}
+             </SelectContent>
+           </Select>
          </div>
          <div className="flex gap-2 bg-[#1A1A1A] p-1 border border-[#2E2E2E] rounded-xl overflow-x-auto whitespace-nowrap scrollbar-hide">
             {['all', 'draft', 'published', 'in_progress', 'completed', 'cancelled'].map((status) => (
