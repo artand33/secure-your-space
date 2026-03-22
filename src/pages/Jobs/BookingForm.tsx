@@ -15,7 +15,9 @@ import {
   Camera,
   X,
   Plus,
-  ShieldCheck
+  ShieldCheck,
+  Zap,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +32,102 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+function DrumPicker({ items, value, onChange, format = (item: any) => item }: { items: any[], value: any, onChange: (v: any) => void, format?: (v: any) => React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollTimeout = useRef<NodeJS.Timeout>();
+  const isDragging = useRef(false);
+  const dragStartY = useRef(0);
+  const dragStartScrollTop = useRef(0);
+  
+  useEffect(() => {
+    if (containerRef.current) {
+      const idx = items.findIndex((i: any) => i === value);
+      if (idx !== -1) {
+        containerRef.current.scrollTop = idx * 40;
+      }
+    }
+  }, []); // Run only on initial mount
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (isDragging.current) return;
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    const target = e.currentTarget;
+    scrollTimeout.current = setTimeout(() => {
+      const idx = Math.round(target.scrollTop / 40);
+      if (items[idx] !== undefined && items[idx] !== value) {
+        onChange(items[idx]);
+      }
+    }, 150);
+  };
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'mouse' || e.button !== 0 || !containerRef.current) return;
+    isDragging.current = true;
+    dragStartY.current = e.clientY;
+    dragStartScrollTop.current = containerRef.current.scrollTop;
+    containerRef.current.style.scrollBehavior = 'auto';
+    containerRef.current.style.scrollSnapType = 'none';
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current || !containerRef.current) return;
+    e.preventDefault();
+    const deltaY = dragStartY.current - e.clientY;
+    containerRef.current.scrollTop = dragStartScrollTop.current + deltaY;
+  };
+
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current || !containerRef.current) return;
+    isDragging.current = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    containerRef.current.style.scrollSnapType = 'y mandatory';
+    containerRef.current.style.scrollBehavior = 'smooth';
+    
+    const idx = Math.round(containerRef.current.scrollTop / 40);
+    containerRef.current.scrollTo({ top: idx * 40 });
+    
+    if (items[idx] !== undefined && items[idx] !== value) {
+      onChange(items[idx]);
+    }
+  };
+
+  return (
+    <div className="relative h-[120px] bg-[#202020] border border-[#2E2E2E] rounded-xl flex-1 overflow-hidden shadow-inner flex flex-col items-center">
+      <div className="absolute top-1/2 left-0 right-0 h-[40px] -mt-[20px] bg-white/5 border-y border-[#E8640A]/20 pointer-events-none" />
+      <div 
+        ref={containerRef}
+        onScroll={handleScroll}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory relative z-10 select-none cursor-grab active:cursor-grabbing text-center touch-pan-y hide-scrollbar"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <div className="h-[40px] shrink-0" />
+        {items.map((item: any, i: number) => (
+          <div 
+            key={i} 
+            className={`h-[40px] flex items-center justify-center snap-center transition-all duration-200
+              ${value === item ? 'text-white font-bold text-lg' : 'text-[#9CA3AF] text-sm hover:text-white/70'}
+            `}
+          >
+            {format(item)}
+          </div>
+        ))}
+        <div className="h-[40px] shrink-0" />
+      </div>
+      <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; }`}</style>
+    </div>
+  );
+}
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const hours = Array.from({length: 24}, (_, i) => i);
+const minutes = [0, 15, 30, 45];
+const getDaysInMonth = (monthIndex: number, year: number) => new Date(year, monthIndex + 1, 0).getDate();
+
 const BookingForm = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -41,7 +139,16 @@ const BookingForm = () => {
   const [photos, setPhotos] = useState<string[]>([]);
   
   // Form States
-  const [preferredDate, setPreferredDate] = useState<string>('');
+  const now = new Date();
+  const [dateMode, setDateMode] = useState<'asap' | 'specific'>('asap');
+  const [wheelDate, setWheelDate] = useState({
+    month: now.getMonth(),
+    day: now.getDate(),
+    hour: now.getHours(),
+    minute: now.getMinutes() >= 45 ? 0 : Math.ceil(now.getMinutes() / 15) * 15
+  });
+  const daysInSelectedMonth = getDaysInMonth(wheelDate.month, now.getFullYear());
+  const days = Array.from({length: daysInSelectedMonth}, (_, i) => i + 1);
   const [propertyAddress, setPropertyAddress] = useState(profile?.address || '');
   const [propertyType, setPropertyType] = useState(profile?.property_type || '');
   const [clientNotes, setClientNotes] = useState('');
@@ -110,10 +217,14 @@ const BookingForm = () => {
     e.preventDefault();
     if (!user || !jobId) return;
     
-    if (!preferredDate || !propertyAddress || !propertyType) {
+    if (!propertyAddress || !propertyType) {
       toast.error('Please fill in all required fields');
       return;
     }
+
+    const finalDate = dateMode === 'asap' 
+      ? 'ASAP' 
+      : new Date(new Date().getFullYear(), wheelDate.month, wheelDate.day, wheelDate.hour, wheelDate.minute).toISOString();
 
     setLoading(true);
     try {
@@ -123,7 +234,7 @@ const BookingForm = () => {
           job_id: jobId,
           client_id: user.id,
           status: 'pending',
-          preferred_date: preferredDate,
+          preferred_date: finalDate,
           property_address: propertyAddress,
           property_type: propertyType,
           client_notes: clientNotes,
@@ -230,17 +341,84 @@ const BookingForm = () => {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
+                  <div className="space-y-4 md:col-span-2">
                     <Label className="text-[#9CA3AF] flex items-center gap-2">
-                       <Calendar className="w-4 h-4" /> Preferred Date
+                       <Calendar className="w-4 h-4" /> Preferred Schedule
                     </Label>
-                    <Input 
-                      type="date" 
-                      required 
-                      value={preferredDate}
-                      onChange={(e) => setPreferredDate(e.target.value)}
-                      className="bg-[#2E2E2E] border-[#3E3E3E] text-white h-12 rounded-xl focus:ring-[#E8640A]/50"
-                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div 
+                        onClick={() => setDateMode('asap')}
+                        className={`cursor-pointer rounded-2xl border-2 p-3 py-4 flex flex-col items-center justify-center gap-2 transition-all ${
+                          dateMode === 'asap' 
+                            ? 'bg-[#E8640A]/10 border-[#E8640A] text-white shadow-[0_0_20px_rgba(232,100,10,0.1)]' 
+                            : 'bg-[#202020] border-[#2E2E2E] text-[#9CA3AF] hover:border-[#4B4B4B]'
+                        }`}
+                      >
+                        <Zap className={`w-5 h-5 ${dateMode === 'asap' ? 'text-[#E8640A] fill-[#E8640A]/20' : ''}`} />
+                        <div className="text-center">
+                          <span className="font-bold block text-sm leading-tight">ASAP</span>
+                          <span className="text-[10px] opacity-70">Next available</span>
+                        </div>
+                      </div>
+
+                      <div 
+                        onClick={() => setDateMode('specific')}
+                        className={`cursor-pointer rounded-2xl border-2 p-3 py-4 flex flex-col items-center justify-center gap-2 transition-all ${
+                          dateMode === 'specific' 
+                            ? 'bg-[#E8640A]/10 border-[#E8640A] text-white shadow-[0_0_20px_rgba(232,100,10,0.1)]' 
+                            : 'bg-[#202020] border-[#2E2E2E] text-[#9CA3AF] hover:border-[#4B4B4B]'
+                        }`}
+                      >
+                        <Clock className={`w-5 h-5 ${dateMode === 'specific' ? 'text-[#E8640A]' : ''}`} />
+                        <div className="text-center">
+                          <span className="font-bold block text-sm leading-tight">Specific Time</span>
+                          <span className="text-[10px] opacity-70">I need exact timing</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {dateMode === 'specific' && (
+                      <div className="animate-in fade-in slide-in-from-top-4 duration-500 pt-4 border-t border-[#2E2E2E]">
+                        <div className="flex flex-col items-center max-w-sm mx-auto">
+                          <div className="flex w-full justify-between items-center mb-2 px-6">
+                            <span className="flex-1 text-center text-[#4B4B4B] text-[10px] font-bold tracking-widest uppercase">DAY</span>
+                            <span className="w-4 shrink-0 px-1 opacity-0">:</span>
+                            <span className="flex-1 text-center text-[#4B4B4B] text-[10px] font-bold tracking-widest uppercase">HOUR</span>
+                          </div>
+                          <div className="flex gap-2 justify-center items-stretch w-full">
+                            <div className="flex flex-1 gap-1">
+                              <DrumPicker 
+                                items={months} 
+                                value={months[wheelDate.month]} 
+                                onChange={(v) => setWheelDate(p => ({...p, month: months.indexOf(v), day: Math.min(p.day, getDaysInMonth(months.indexOf(v), new Date().getFullYear()))}))} 
+                              />
+                              <DrumPicker 
+                                items={days} 
+                                value={wheelDate.day} 
+                                onChange={(v) => setWheelDate(p => ({...p, day: v}))} 
+                                format={(v) => v.toString().padStart(2, '0')}
+                              />
+                            </div>
+                            <div className="flex flex-col justify-center px-1 text-[#4B4B4B] font-bold pb-1">:</div>
+                            <div className="flex flex-1 gap-1">
+                              <DrumPicker 
+                                items={hours} 
+                                value={wheelDate.hour} 
+                                onChange={(v) => setWheelDate(p => ({...p, hour: v}))} 
+                                format={(v) => v.toString().padStart(2, '0')}
+                              />
+                              <DrumPicker 
+                                items={minutes} 
+                                value={wheelDate.minute} 
+                                onChange={(v) => setWheelDate(p => ({...p, minute: v}))} 
+                                format={(v) => v.toString().padStart(2, '0')}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">

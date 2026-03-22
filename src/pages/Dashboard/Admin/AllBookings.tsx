@@ -20,7 +20,9 @@ import {
   Eye,
   Camera,
   MessageSquare,
-  Briefcase
+  Briefcase,
+  Mail,
+  Phone
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -73,6 +75,8 @@ interface Booking {
   profiles: {
     full_name: string;
     avatar_url: string;
+    email?: string;
+    phone_number?: string;
   };
   jobs: {
     title: string;
@@ -96,13 +100,13 @@ const AllBookings = () => {
         .from('bookings')
         .select(`
           *,
-          profiles:client_id (full_name, avatar_url),
+          profiles:client_id (full_name, avatar_url, email, phone_number),
           jobs:job_id (title, location)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Booking[];
+      return data as unknown as Booking[];
     }
   });
 
@@ -284,8 +288,8 @@ const AllBookings = () => {
                         Details
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2E2E2E] text-white overflow-y-auto max-h-[90vh]">
-                      <DialogHeader>
+                    <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2E2E2E] text-white flex flex-col max-h-[90vh] overflow-hidden">
+                      <DialogHeader className="shrink-0">
                         <DialogTitle className="text-2xl font-bold flex items-center gap-2">
                           Booking Details
                           {booking.status && getStatusBadge(booking.status)}
@@ -295,7 +299,7 @@ const AllBookings = () => {
                         </DialogDescription>
                       </DialogHeader>
 
-                      <div className="space-y-6 py-6 border-y border-[#2E2E2E]">
+                      <div className="space-y-6 py-6 border-y border-[#2E2E2E] overflow-y-auto min-h-0 pr-4">
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label className="text-[#4B4B4B] font-bold uppercase text-[10px] tracking-widest">Property Type</Label>
@@ -318,6 +322,23 @@ const AllBookings = () => {
                           <div className="flex items-start gap-2 text-white font-medium bg-[#202020] p-3 rounded-xl border border-[#2E2E2E]">
                             <MapPin className="w-4 h-4 text-[#E8640A] mt-1 shrink-0" />
                             {booking.property_address || 'Address not specified'}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label className="text-[#4B4B4B] font-bold uppercase text-[10px] tracking-widest">Client Email</Label>
+                            <div className="flex items-center gap-2 text-white font-medium bg-[#202020] p-3 rounded-xl border border-[#2E2E2E] overflow-hidden">
+                              <Mail className="w-4 h-4 text-[#E8640A] shrink-0" />
+                              <span className="truncate">{booking.profiles?.email || 'No email provided'}</span>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#4B4B4B] font-bold uppercase text-[10px] tracking-widest">Client Phone</Label>
+                            <div className="flex items-center gap-2 text-white font-medium bg-[#202020] p-3 rounded-xl border border-[#2E2E2E]">
+                              <Phone className="w-4 h-4 text-[#E8640A] shrink-0" />
+                              {booking.profiles?.phone_number || 'No phone provided'}
+                            </div>
                           </div>
                         </div>
 
@@ -356,7 +377,7 @@ const AllBookings = () => {
                         )}
                       </div>
 
-                      <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
+                      <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4 shrink-0">
                         {booking.status === 'pending' && (
                           <div className="flex w-full gap-2 flex-wrap sm:flex-nowrap">
                             <Button

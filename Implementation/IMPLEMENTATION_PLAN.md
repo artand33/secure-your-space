@@ -181,11 +181,11 @@ Pre-auth lead tracking.
 - [x] **Access Control**: Implement `ProtectedRoute` wrappers and role-based redirects.
 
 ### Phase 2: Booking System & Client Flow (4-5 Days)
-- [ ] Public Service catalog (Read-only jobs).
-- [ ] Booking creation form: Photo upload (Storage) + Service selection.
-- [ ] **Critical Logic**: User → Client role promotion on first booking confirmation.
-- [ ] Admin Booking Management: Confirm/Reject/Reschedule.
-- [ ] History logs for all booking transitions.
+- [x] Public Service catalog (Read-only jobs).
+- [x] Booking creation form: Photo upload (Storage) + Service selection.
+- [x] **Critical Logic**: User → Client role promotion on first booking confirmation.
+- [x] Admin Booking Management: Confirm/Reject/Reschedule.
+- [x] History logs for all booking transitions.
 
 ### Phase 3: Admin Core Development (3-4 Days)
 - [x] Full Dashboard layout with Sidebar. (Done ✅ - [#10])
