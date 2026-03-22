@@ -73,6 +73,14 @@ const App = () => (
 
               <Route path="/unauthorized" element={<Unauthorized />} />
 
+              {/* Public Dashboard Routes */}
+              <Route path="/dashboard/jobs" element={<JobDiscovery />} />
+              <Route path="/dashboard/jobs/:jobId/book" element={
+                <ProtectedRoute>
+                  <BookingForm />
+                </ProtectedRoute>
+              } />
+
               {/* Management Routes wrapped in the same layout */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
@@ -93,16 +101,6 @@ const App = () => (
                 <Route path="settings" element={
                   <ProtectedRoute>
                     <SettingsPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="jobs" element={
-                  <ProtectedRoute>
-                    <JobDiscovery />
-                  </ProtectedRoute>
-                } />
-                <Route path="jobs/:jobId/book" element={
-                  <ProtectedRoute>
-                    <BookingForm />
                   </ProtectedRoute>
                 } />
                 <Route path="notifications" element={

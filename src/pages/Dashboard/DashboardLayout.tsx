@@ -148,6 +148,14 @@ const DashboardLayout = () => {
 
           <div className="h-8 w-px bg-white/10 hidden sm:block mx-1" />
 
+          <Button
+            variant="ghost"
+            asChild
+            className="hidden sm:flex text-[#9CA3AF] hover:text-[#E8640A] hover:bg-white/5 font-bold uppercase tracking-wider text-xs"
+          >
+            <Link to="/dashboard/jobs">Browse Catalog</Link>
+          </Button>
+
           <NotificationBell />
           <UserMenu />
         </div>

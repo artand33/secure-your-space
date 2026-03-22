@@ -141,7 +141,7 @@ const JobDiscovery = () => {
                 </p>
 
                 <Button 
-                  onClick={() => navigate(`/jobs/${job.id}/book`)}
+                  onClick={() => navigate(`/dashboard/jobs/${job.id}/book`)}
                   className="w-full bg-[#E8640A] hover:bg-[#D55C09] text-white rounded-full py-6 font-bold group-hover:shadow-[0_0_20px_rgba(232,100,10,0.4)] transition-all flex items-center justify-center gap-2"
                 >
                   Book This Unit <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
