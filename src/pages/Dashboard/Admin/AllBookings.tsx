@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { 
   CalendarCheck, 
@@ -18,7 +19,8 @@ import {
   ChevronRight,
   Eye,
   Camera,
-  MessageSquare
+  MessageSquare,
+  Briefcase
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -79,10 +81,12 @@ interface Booking {
 }
 
 const AllBookings = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [reason, setReason] = useState('');
-  const [actionType, setActionType] = useState<'reject' | 'cancel' | null>(null);
+  const [newDate, setNewDate] = useState('');
+  const [actionType, setActionType] = useState<'reject' | 'cancel' | 'reschedule' | null>(null);
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
 
   const { data: bookings, isLoading } = useQuery({
@@ -103,23 +107,43 @@ const AllBookings = () => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status, reason }: { id: string, status: BookingStatus, reason?: string }) => {
-      const updateData: any = { status };
+    mutationFn: async ({ id, status, reason, newDate }: { id: string, status?: BookingStatus, reason?: string, newDate?: string }) => {
+      const updateData: any = {};
+      if (status) updateData.status = status;
       if (status === 'rejected') updateData.rejection_reason = reason;
       if (status === 'cancelled') updateData.cancel_reason = reason;
+      if (newDate) updateData.preferred_date = newDate;
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('bookings')
         .update(updateData)
         .eq('id', id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      // Extract original status fallback in case of reschedule
+      const finalStatus = status || selectedBooking?.status || 'pending';
+
+      if (user?.id) {
+        let logReason = reason;
+        if (!logReason && newDate) {
+          logReason = `Admin rescheduled date to ${format(new Date(newDate), 'PPP')}`;
+        }
+        
+        await supabase.from('booking_history').insert([{
+           booking_id: id,
+           new_status: finalStatus,
+           changed_by: user.id,
+           reason: logReason || `Status updated to ${finalStatus}`
+        }]);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-bookings'] });
-      toast.success('Booking status updated successfully');
+      toast.success('Booking updated successfully');
       setIsActionDialogOpen(false);
       setReason('');
+      setNewDate('');
       setActionType(null);
     },
     onError: (error: any) => {
@@ -127,27 +151,36 @@ const AllBookings = () => {
     }
   });
 
-  const handleAction = (status: BookingStatus) => {
+  const handleAction = (status: BookingStatus | 'reschedule') => {
     if (!selectedBooking) return;
 
     if (status === 'confirmed') {
       updateStatusMutation.mutate({ id: selectedBooking.id, status: 'confirmed' });
     } else {
-      setActionType(status === 'rejected' ? 'reject' : 'cancel');
+      setActionType(status === 'rejected' ? 'reject' : status === 'cancelled' ? 'cancel' : 'reschedule');
+      if (status === 'reschedule') setNewDate(selectedBooking.preferred_date || '');
       setIsActionDialogOpen(true);
     }
   };
 
   const confirmAction = () => {
-    if (!selectedBooking || !actionType || !reason.trim()) {
+    if (!selectedBooking || !actionType) return;
+    
+    if (actionType !== 'reschedule' && !reason.trim()) {
       toast.error('A reason is required for rejects or cancellations');
+      return;
+    }
+    
+    if (actionType === 'reschedule' && !newDate) {
+      toast.error('A new date is required for rescheduling');
       return;
     }
 
     updateStatusMutation.mutate({ 
       id: selectedBooking.id, 
-      status: actionType === 'reject' ? 'rejected' : 'cancelled',
-      reason 
+      status: actionType === 'reject' ? 'rejected' : actionType === 'cancel' ? 'cancelled' : undefined,
+      reason,
+      newDate: actionType === 'reschedule' ? newDate : undefined
     });
   };
 
@@ -325,34 +358,52 @@ const AllBookings = () => {
 
                       <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
                         {booking.status === 'pending' && (
-                          <>
+                          <div className="flex w-full gap-2 flex-wrap sm:flex-nowrap">
                             <Button
                               variant="default"
-                              className="bg-green-600 hover:bg-green-700 text-white rounded-full px-6 flex-1"
+                              className="bg-green-600 hover:bg-green-700 text-white rounded-full px-4 flex-1"
                               onClick={() => { setSelectedBooking(booking); handleAction('confirmed'); }}
                               disabled={updateStatusMutation.isPending}
                             >
-                              Confirm Booking
+                              Confirm
                             </Button>
                             <Button
                               variant="outline"
-                              className="border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400 rounded-full px-6"
+                              className="border-[#E8640A]/50 text-[#E8640A] hover:bg-[#E8640A]/10 rounded-full px-4 flex-1"
+                              onClick={() => { setSelectedBooking(booking); handleAction('reschedule'); }}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              Reschedule
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400 rounded-full px-4 flex-1"
                               onClick={() => { setSelectedBooking(booking); handleAction('rejected'); }}
                               disabled={updateStatusMutation.isPending}
                             >
                               Reject
                             </Button>
-                          </>
+                          </div>
                         )}
                         {booking.status === 'confirmed' && (
-                          <Button
-                            variant="outline"
-                            className="border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400 rounded-full px-6 flex-1"
-                            onClick={() => { setSelectedBooking(booking); handleAction('cancelled'); }}
-                            disabled={updateStatusMutation.isPending}
-                          >
-                            Cancel Job
-                          </Button>
+                          <div className="flex w-full gap-2 flex-wrap sm:flex-nowrap">
+                            <Button
+                              variant="outline"
+                              className="border-[#E8640A]/50 text-[#E8640A] hover:bg-[#E8640A]/10 rounded-full px-6 flex-1"
+                              onClick={() => { setSelectedBooking(booking); handleAction('reschedule'); }}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              Reschedule
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400 rounded-full px-6 flex-1"
+                              onClick={() => { setSelectedBooking(booking); handleAction('cancelled'); }}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              Cancel Job
+                            </Button>
+                          </div>
                         )}
                       </DialogFooter>
                     </DialogContent>
@@ -371,15 +422,23 @@ const AllBookings = () => {
                           <DropdownMenuItem onClick={() => { setSelectedBooking(booking); updateStatusMutation.mutate({ id: booking.id, status: 'confirmed' }); }} className="focus:bg-green-500/10 focus:text-green-500 cursor-pointer">
                             <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setSelectedBooking(booking); handleAction('reschedule'); }} className="focus:bg-[#E8640A]/10 focus:text-[#E8640A] cursor-pointer">
+                            <Clock className="w-4 h-4 mr-2" /> Reschedule
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => { setSelectedBooking(booking); setActionType('reject'); setIsActionDialogOpen(true); }} className="focus:bg-red-500/10 focus:text-red-500 cursor-pointer">
                             <XCircle className="w-4 h-4 mr-2" /> Reject
                           </DropdownMenuItem>
                         </>
                       )}
                       {booking.status === 'confirmed' && (
-                        <DropdownMenuItem onClick={() => { setSelectedBooking(booking); setActionType('cancel'); setIsActionDialogOpen(true); }} className="focus:bg-red-500/10 focus:text-red-500 cursor-pointer">
-                          <XCircle className="w-4 h-4 mr-2" /> Cancel Job
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem onClick={() => { setSelectedBooking(booking); handleAction('reschedule'); }} className="focus:bg-[#E8640A]/10 focus:text-[#E8640A] cursor-pointer">
+                            <Clock className="w-4 h-4 mr-2" /> Reschedule
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setSelectedBooking(booking); setActionType('cancel'); setIsActionDialogOpen(true); }} className="focus:bg-red-500/10 focus:text-red-500 cursor-pointer">
+                            <XCircle className="w-4 h-4 mr-2" /> Cancel Job
+                          </DropdownMenuItem>
+                        </>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -390,24 +449,41 @@ const AllBookings = () => {
         )}
       </div>
 
-      {/* Reject/Cancel Reason Modal */}
+      {/* Reject/Cancel/Reschedule Reason Modal */}
       <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogContent className="bg-[#1A1A1A] border-[#2E2E2E] text-white">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-              {actionType === 'reject' ? 'Reject Booking' : 'Cancel Booking'}
+              {actionType === 'reschedule' ? (
+                 <><CalendarCheck className="w-5 h-5 text-[#E8640A]" /> Reschedule Booking</>
+              ) : (
+                 <><AlertTriangle className="w-5 h-5 text-red-500" /> {actionType === 'reject' ? 'Reject Booking' : 'Cancel Booking'}</>
+              )}
             </DialogTitle>
             <DialogDescription className="text-[#9CA3AF]">
-              Please provide a reason for this {actionType === 'reject' ? 'rejection' : 'cancellation'}. This will be visible to the client.
+              {actionType === 'reschedule' 
+                ? 'Select a new date/time and optionally provide a reason for the client.'
+                : `Please provide a reason for this ${actionType === 'reject' ? 'rejection' : 'cancellation'}. This will be visible to the client.`}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
+            {actionType === 'reschedule' && (
+              <div className="space-y-2">
+                <Label htmlFor="newDate">New Date (Required)</Label>
+                <Input 
+                  id="newDate"
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="bg-[#202020] border-[#2E2E2E] focus:ring-[#E8640A] h-12 text-white"
+                />
+              </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason (Required)</Label>
+              <Label htmlFor="reason">{actionType === 'reschedule' ? 'Message to Client (Optional)' : 'Reason (Required)'}</Label>
               <Textarea
                 id="reason"
-                placeholder={`Tell the client why this was ${actionType === 'reject' ? 'rejected' : 'cancelled'}...`}
+                placeholder={actionType === 'reschedule' ? 'Add a note about why it was rescheduled...' : `Tell the client why this was ${actionType === 'reject' ? 'rejected' : 'cancelled'}...`}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className="bg-[#202020] border-[#2E2E2E] focus:ring-[#E8640A] min-h-[120px]"
@@ -415,15 +491,15 @@ const AllBookings = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setIsActionDialogOpen(false); setReason(''); }} className="text-[#9CA3AF] hover:bg-white/5">
+            <Button variant="ghost" onClick={() => { setIsActionDialogOpen(false); setReason(''); setNewDate(''); }} className="text-[#9CA3AF] hover:bg-white/5">
               Cancel
             </Button>
             <Button 
-              className="bg-red-600 hover:bg-red-700 text-white rounded-full px-6"
+              className={actionType === 'reschedule' ? "bg-[#E8640A] hover:bg-[#D55C09] text-white rounded-full px-6" : "bg-red-600 hover:bg-red-700 text-white rounded-full px-6"}
               onClick={confirmAction}
-              disabled={!reason.trim() || updateStatusMutation.isPending}
+              disabled={updateStatusMutation.isPending || (actionType !== 'reschedule' && !reason.trim()) || (actionType === 'reschedule' && !newDate)}
             >
-              Confirm {actionType === 'reject' ? 'Rejection' : 'Cancellation'}
+              Confirm {actionType === 'reject' ? 'Rejection' : actionType === 'cancel' ? 'Cancellation' : 'Reschedule'}
             </Button>
           </DialogFooter>
         </DialogContent>
