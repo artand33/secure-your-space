@@ -143,8 +143,8 @@ const JobAvailabilityDialog = ({ open, onOpenChange, job }: JobAvailabilityDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-[#1A1A1A] border-[#2E2E2E] text-white flex flex-col max-h-[90vh] overflow-hidden">
-        <DialogHeader className="shrink-0">
+      <DialogContent className="sm:max-w-[500px] bg-[#1A1A1A] border-[#2E2E2E] text-white">
+        <DialogHeader className="pb-4 border-b border-[#2E2E2E]">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Calendar className="w-5 h-5 text-[#E8640A]" />
             Manage Schedule for {job?.title}
@@ -157,9 +157,8 @@ const JobAvailabilityDialog = ({ open, onOpenChange, job }: JobAvailabilityDialo
           </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 flex flex-col min-h-0">
-              
-              <div className="overflow-y-auto pr-4 space-y-6 min-h-0">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
+              <div className="overflow-y-auto max-h-[70vh] pr-4 space-y-6">
                 <div className="p-4 rounded-xl bg-[#202020] border border-[#2E2E2E] flex items-center justify-between">
                 <div>
                   <FormLabel className="text-white font-bold text-base">Ongoing Subscriptions</FormLabel>
@@ -251,9 +250,9 @@ const JobAvailabilityDialog = ({ open, onOpenChange, job }: JobAvailabilityDialo
                   )}
                 </div>
               </div>
-              </div>
 
-              <DialogFooter className="pt-4 border-t border-[#2E2E2E] shrink-0">
+              </div>
+              <DialogFooter className="pt-4 border-t border-[#2E2E2E]">
                 <Button 
                   type="submit" 
                   disabled={upsertMutation.isPending} 

@@ -288,8 +288,8 @@ const AllBookings = () => {
                         Details
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2E2E2E] text-white flex flex-col max-h-[90vh] overflow-hidden">
-                      <DialogHeader className="shrink-0">
+                    <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2E2E2E] text-white flex flex-col max-h-[90vh] mt-16 sm:mt-10">
+                      <DialogHeader className="pb-4 border-b border-[#2E2E2E]">
                         <DialogTitle className="text-2xl font-bold flex items-center gap-2">
                           Booking Details
                           {booking.status && getStatusBadge(booking.status)}
@@ -299,7 +299,7 @@ const AllBookings = () => {
                         </DialogDescription>
                       </DialogHeader>
 
-                      <div className="space-y-6 py-6 border-y border-[#2E2E2E] overflow-y-auto min-h-0 pr-4">
+                      <div className="space-y-6 py-4 border-y border-[#2E2E2E] overflow-y-auto max-h-[60vh] pr-4">
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label className="text-[#4B4B4B] font-bold uppercase text-[10px] tracking-widest">Property Type</Label>
@@ -377,7 +377,7 @@ const AllBookings = () => {
                         )}
                       </div>
 
-                      <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4 shrink-0">
+                      <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-[#2E2E2E]">
                         {booking.status === 'pending' && (
                           <div className="flex w-full gap-2 flex-wrap sm:flex-nowrap">
                             <Button

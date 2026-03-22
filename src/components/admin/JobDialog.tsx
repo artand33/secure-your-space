@@ -158,13 +158,14 @@ const JobDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2E2E2E] text-white overflow-y-auto max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2E2E2E] text-white flex flex-col max-h-[90vh] mt-16 sm:mt-10">
+        <DialogHeader className="pb-4 border-b border-[#2E2E2E]">
           <DialogTitle className="text-xl font-bold">{title}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="overflow-y-auto max-h-[60vh] pr-4 space-y-4 py-2">
+              <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="title"
@@ -360,7 +361,8 @@ const JobDialog = ({
               )}
             />
 
-            <DialogFooter className="pt-4">
+            </div>
+            <DialogFooter className="pt-4 border-t border-[#2E2E2E]">
               <Button type="submit" className="bg-[#E8640A] hover:bg-[#D55C09] text-white rounded-full transition-all px-8">
                 {initialData ? 'Update Job Unit' : 'Create Job Unit'}
               </Button>

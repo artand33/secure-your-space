@@ -97,11 +97,12 @@ const ServiceTypeDialog = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-[#1A1A1A] border-[#2E2E2E] text-white">
-        <DialogHeader>
+        <DialogHeader className="pb-4 border-b border-[#2E2E2E]">
           <DialogTitle className="text-xl font-bold">{title}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+            <div className="overflow-y-auto max-h-[70vh] pr-4 space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -196,7 +197,8 @@ const ServiceTypeDialog = ({
                 </FormItem>
               )}
             />
-            <DialogFooter className="pt-4">
+            </div>
+            <DialogFooter className="pt-4 border-t border-[#2E2E2E]">
               <Button type="submit" className="bg-[#E8640A] hover:bg-[#D55C09] text-white rounded-full transition-all px-8">
                 {initialData ? 'Update Service' : 'Create Service'}
               </Button>
