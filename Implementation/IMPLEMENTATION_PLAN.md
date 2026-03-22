@@ -191,8 +191,8 @@ Pre-auth lead tracking.
 - [x] Full Dashboard layout with Sidebar. (Done ✅ - [#10])
 - [x] Service Type CRUD management.
 - [x] Job Creation engine: Basic details + Availability rules + Slug generation.
-- [ ] Job Listing view with status/type filters.
-- [ ] Audit logging for Job status changes.
+- [x] Job Listing view with status/type filters.
+- [x] Audit logging for Job status changes.
 
 ### Phase 4: Notification Center & Final Polish (3 Days)
 - [ ] Notification System: Database table + Realtime subscription + Email fallback.

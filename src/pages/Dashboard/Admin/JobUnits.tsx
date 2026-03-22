@@ -6,6 +6,7 @@ import { Briefcase, Plus, Loader2, Edit2, Trash2, MapPin, Tag, Calendar, Clock }
 import { toast } from 'sonner';
 import JobDialog from '@/components/admin/JobDialog';
 import JobAvailabilityDialog from '@/components/admin/JobAvailabilityDialog';
+import JobHistoryDialog from '@/components/admin/JobHistoryDialog';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -23,6 +24,8 @@ const JobUnits = () => {
   const [editingJob, setEditingJob] = useState<any>(null);
   const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false);
   const [availabilityJob, setAvailabilityJob] = useState<any>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyJob, setHistoryJob] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -262,6 +265,14 @@ const JobUnits = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
+                    onClick={() => { setHistoryJob(job); setIsHistoryOpen(true); }}
+                    className="text-white hover:text-[#E8640A] h-8 w-8"
+                  >
+                    <Clock className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
                     onClick={() => handleEdit(job)}
                     className="text-white hover:text-primary h-8 w-8"
                   >
@@ -345,6 +356,12 @@ const JobUnits = () => {
         open={isAvailabilityOpen}
         onOpenChange={setIsAvailabilityOpen}
         job={availabilityJob}
+      />
+
+      <JobHistoryDialog
+        open={isHistoryOpen}
+        onOpenChange={setIsHistoryOpen}
+        job={historyJob}
       />
     </div>
   );
