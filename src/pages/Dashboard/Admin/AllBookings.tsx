@@ -56,6 +56,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'rejected';
 
@@ -92,6 +99,7 @@ const AllBookings = () => {
   const [newDate, setNewDate] = useState('');
   const [actionType, setActionType] = useState<'reject' | 'cancel' | 'reschedule' | null>(null);
   const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: bookings, isLoading } = useQuery({
     queryKey: ['admin-bookings'],
@@ -219,18 +227,62 @@ const AllBookings = () => {
           </h1>
           <p className="text-[#9CA3AF] mt-2">Oversee and manage client bookings across the entire system.</p>
         </div>
+
+        <div className="flex items-center gap-3 bg-transparent p-0 shrink-0">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-auto bg-transparent border-none text-white font-bold text-xs h-9 focus:ring-0 focus:ring-offset-0 p-0">
+              <SelectValue>
+                {statusFilter === 'all' ? (
+                  <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20">All Bookings</Badge>
+                ) : (
+                  getStatusBadge(statusFilter as BookingStatus)
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-[#1A1A1A] border-[#2E2E2E] text-white rounded-xl">
+              <SelectItem value="all" className="cursor-pointer focus:bg-white/5">
+                <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20">All Bookings</Badge>
+              </SelectItem>
+              <SelectItem value="pending" className="cursor-pointer focus:bg-white/5">
+                {getStatusBadge('pending')}
+              </SelectItem>
+              <SelectItem value="confirmed" className="cursor-pointer focus:bg-white/5">
+                {getStatusBadge('confirmed')}
+              </SelectItem>
+              <SelectItem value="in_progress" className="cursor-pointer focus:bg-white/5">
+                {getStatusBadge('in_progress')}
+              </SelectItem>
+              <SelectItem value="completed" className="cursor-pointer focus:bg-white/5">
+                {getStatusBadge('completed')}
+              </SelectItem>
+              <SelectItem value="cancelled" className="cursor-pointer focus:bg-white/5">
+                {getStatusBadge('cancelled')}
+              </SelectItem>
+              <SelectItem value="rejected" className="cursor-pointer focus:bg-white/5">
+                {getStatusBadge('rejected')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {bookings?.length === 0 ? (
+        {(!bookings || bookings.length === 0) ? (
           <div className="p-16 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-[#202020] flex items-center justify-center mx-auto text-[#4B4B4B]">
               <CalendarCheck className="w-8 h-8" />
             </div>
             <p className="text-[#9CA3AF] text-lg">No bookings found in the system yet.</p>
           </div>
+        ) : bookings.filter(b => statusFilter === 'all' || b.status === statusFilter).length === 0 ? (
+          <div className="p-16 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-[#202020] flex items-center justify-center mx-auto text-[#4B4B4B]">
+              <CalendarCheck className="w-8 h-8" />
+            </div>
+            <p className="text-[#9CA3AF] text-lg">No {statusFilter} bookings found.</p>
+          </div>
         ) : (
-          bookings?.map((booking) => (
+          bookings?.filter(b => statusFilter === 'all' || b.status === statusFilter).map((booking) => (
             <Card key={booking.id} className="bg-[#1A1A1A] border-[#2E2E2E] overflow-hidden group hover:border-[#E8640A]/30 transition-all duration-300">
               <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center">
                 {/* User Info */}

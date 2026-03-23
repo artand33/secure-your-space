@@ -1,4 +1,6 @@
+import { useState } from "react";
 import Hero from "@/components/sections/Hero";
+import EnquiryFormDialog from "@/components/forms/EnquiryFormDialog";
 import Services from "@/components/sections/Services";
 import WhyUs from "@/components/sections/WhyUs";
 import Trust from "@/components/sections/Trust";
@@ -10,9 +12,10 @@ import { Shield } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 
 const Index = () => {
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
+
   const handleCTAClick = () => {
-    const el = document.getElementById("final-cta");
-    el?.scrollIntoView({ behavior: "smooth" });
+    setIsEnquiryOpen(true);
   };
 
   return (
@@ -35,6 +38,7 @@ const Index = () => {
         <div id="final-cta">
           <FinalCTA onCTAClick={handleCTAClick} />
         </div>
+        <EnquiryFormDialog open={isEnquiryOpen} onOpenChange={setIsEnquiryOpen} />
       </div>
 
       {/* Footer */}
