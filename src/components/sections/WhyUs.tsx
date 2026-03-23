@@ -23,7 +23,7 @@ const WhyUs = () => {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section id="why-us" className="py-20 md:py-28 scroll-mt-20">
+    <section id="why-us" className="relative py-24 md:py-32 overflow-hidden bg-gradient-to-b from-transparent via-[#101010]/40 to-transparent scroll-mt-20 border-b border-white/[0.01]">
       <div className="section-divider mb-20" />
       <div ref={ref} className="container mx-auto px-4 max-w-4xl">
         <div className={`text-center mb-16 ${isVisible ? "animate-fade-in" : "opacity-0"}`}>
@@ -34,7 +34,7 @@ const WhyUs = () => {
           {reasons.map((reason, i) => (
             <div
               key={reason.title}
-              className={`text-center bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)] ${
+              className={`text-center bg-white/[0.01] backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.03] border-t-white/[0.1] transition-all duration-700 hover:bg-white/[0.03] hover:border-[#E8640A]/30 hover:shadow-[0_30px_70px_rgba(0,0,0,0.8),0_0_50px_rgba(232,100,10,0.06)] hover:-translate-y-2 ${
                 isVisible ? "animate-fade-in" : "opacity-0"
               }`}
               style={{ animationDelay: isVisible ? `${i * 150 + 200}ms` : undefined }}

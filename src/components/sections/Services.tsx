@@ -40,7 +40,7 @@ const Services = ({ onCTAClick }: ServicesProps) => {
   return (
     <section
       id="services"
-      className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-background to-secondary/40 scroll-mt-20"
+      className="relative py-24 md:py-32 overflow-hidden bg-gradient-to-b from-transparent via-[#131313]/50 to-transparent scroll-mt-20 border-y border-white/[0.02]"
     >
       <div className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_top,_rgba(37,99,235,0.18),_transparent_65%)]" />
       <div className="section-divider mb-20" />
@@ -56,7 +56,7 @@ const Services = ({ onCTAClick }: ServicesProps) => {
           {services.map((service, i) => (
             <div
               key={service.title}
-              className={`group relative bg-card rounded-xl p-8 border border-border/70 hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_hsl(25_100%_50%/0.16)] hover:-translate-y-1 ${
+              className={`group relative bg-white/[0.02] backdrop-blur-2xl rounded-3xl p-8 border border-white/[0.04] border-t-white/[0.12] transition-all duration-700 hover:bg-white/[0.04] hover:border-[#E8640A]/30 hover:shadow-[0_30px_70px_rgba(0,0,0,0.8),0_0_50px_rgba(232,100,10,0.08)] hover:-translate-y-2 ${
                 isVisible ? "animate-fade-in" : "opacity-0"
               }`}
               style={{ animationDelay: isVisible ? `${i * 100 + 200}ms` : undefined }}
