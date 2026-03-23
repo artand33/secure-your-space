@@ -38,6 +38,35 @@ const Notifications = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`notifications-realtime-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+          if (payload.eventType === 'INSERT') {
+             toast.info(payload.new.title || 'New Notification', {
+               description: payload.new.message,
+             });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
+
   const { data: notifications, isPending } = useQuery({
     queryKey: ['notifications', user?.id],
     queryFn: async () => {

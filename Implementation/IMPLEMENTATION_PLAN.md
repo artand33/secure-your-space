@@ -195,7 +195,7 @@ Pre-auth lead tracking.
 - [x] Audit logging for Job status changes.
 
 ### Phase 4: Notification Center & Final Polish (3 Days)
-- [ ] Notification System: Database table + Realtime subscription + Email fallback.
+- [x] Notification System: Database table + Realtime subscription + Email fallback. (Implemented)
 - [x] **Account Management (Profile)**:
   - [x] Profile editing (Name, Property Type, Address).
   - [x] Avatar/Photo upload (Supabase Storage integration).
