@@ -43,9 +43,19 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl bg-[#141414] border-[#2E2E2E] p-0 overflow-hidden text-white shadow-2xl">
-        <div className="p-6 border-b border-[#2E2E2E]/50">
-          <DialogHeader>
+      <DialogContent className="max-w-5xl w-full bg-[#141414] border-[#2E2E2E] p-0 overflow-hidden text-white shadow-2xl fixed top-[90px] bottom-[25px] left-1/2 -translate-x-1/2 translate-y-0 flex flex-col">
+        <div className="p-6 border-b border-[#2E2E2E]/50 shrink-0">
+          <DialogHeader className="relative">
+            {step === 1 && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => onOpenChange(false)}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-white flex items-center gap-1 hover:bg-transparent px-0"
+              >
+                <ArrowLeft className="w-4 h-4" /> Home
+              </Button>
+            )}
             <DialogTitle className="text-white font-bold text-center">
               {step === 1 && "Step 1: Contact Information"}
               {step === 2 && "Step 2: Assessment Details"}
@@ -60,9 +70,9 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-8 flex-1 flex flex-col justify-center overflow-y-auto">
           {step === 1 && (
-            <form onSubmit={handleNext} className="space-y-4">
+            <form onSubmit={handleNext} className="space-y-6 max-w-lg mx-auto w-full">
               <div className="space-y-2">
                 <Label className="text-[#9CA3AF]">Full Name</Label>
                 <Input 
@@ -87,7 +97,7 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
               <Button 
                 type="submit" 
                 disabled={!isStep1Valid}
-                className="w-full bg-[#E8640A] hover:bg-[#F97316] text-white rounded-full h-12 font-bold flex items-center justify-center gap-2 mt-2"
+                className="w-full bg-[#E8640A] hover:bg-[#F97316] text-white rounded-full h-12 font-bold flex items-center justify-center gap-2 mt-4"
               >
                 Continue <ArrowRight className="w-4 h-4" />
               </Button>
@@ -95,7 +105,7 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
           )}
 
           {step === 2 && (
-            <div className="space-y-4">
+            <div className="space-y-6 max-w-lg mx-auto w-full">
               <div className="space-y-2">
                 <Label className="text-[#9CA3AF]">1. What type of property needs protecting?</Label>
                 <Select value={formData.propertyType} onValueChange={(val) => setFormData({...formData, propertyType: val})}>
@@ -133,7 +143,7 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
                   </SelectTrigger>
                   <SelectContent className="bg-[#1A1A1A] border-[#2E2E2E] text-white">
                     <SelectItem value="ASAP">ASAP</SelectItem>
-                    <SelectItem value="Within a month">Within a month</SelectItem>
+                    <SelectItem value="1-6 months">1-6 months</SelectItem>
                     <SelectItem value="Just researching">Just researching</SelectItem>
                   </SelectContent>
                 </Select>
@@ -161,17 +171,11 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
           )}
 
           {step === 3 && (
-            <div className="min-h-[400px] relative">
-              {loadingCalendly && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#141414] z-10">
-                  <Loader2 className="w-8 h-8 text-[#E8640A] animate-spin mb-2" />
-                  <p className="text-xs text-[#4B4B4B]">Loading Calendly Scheduler...</p>
-                </div>
-              )}
-              <div className="max-h-[500px] overflow-y-auto">
+            <div className="flex-1 flex flex-col h-full">
+              <div className="flex-1 w-full h-full overflow-hidden">
                 <InlineWidget
                   url={calendlyUrl!}
-                  styles={{ height: '500px', width: '100%' }}
+                  styles={{ height: '100%', width: '100%' }}
                   pageSettings={{
                     backgroundColor: bgColor,
                     hideGdprBanner: true,
@@ -188,6 +192,23 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
                     }
                   }}
                 />
+              </div>
+              <div className="flex gap-4 pt-4 border-t border-[#2E2E2E]/50 mt-2 shrink-0">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={handleBack}
+                  className="flex-1 max-w-[150px] border border-[#2E2E2E] hover:bg-white/5 text-white h-12 rounded-full font-bold flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Back
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={() => { /* placeholder - to be connected later */ }}
+                  className="flex-1 max-w-[150px] bg-[#E8640A] hover:bg-[#F97316] text-white h-12 rounded-full font-bold flex items-center justify-center gap-2 ml-auto"
+                >
+                  Next <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           )}
