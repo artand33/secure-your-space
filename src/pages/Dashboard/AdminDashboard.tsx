@@ -1,35 +1,102 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Users, Calendar, Briefcase, AlertTriangle } from 'lucide-react';
+import { Users, Calendar as CalendarIcon, Briefcase, AlertTriangle, Loader2 } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 const AdminDashboard = () => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+
+  // 📈 KPI Stats queries
+  const { data: stats, isPending: statsLoading } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      const [{ count: users }, { count: activeJobs }, { count: pendingBookings }, { count: enquiries }] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('jobs').select('*', { count: 'exact', head: true }).in('status', ['published', 'in_progress']),
+        supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('enquiries').select('*', { count: 'exact', head: true }).eq('status', 'new')
+      ]);
+      return { users: users || 0, activeJobs: activeJobs || 0, pendingBookings: pendingBookings || 0, enquiries: enquiries || 0 };
+    }
+  });
+
+  // 🗓️ Calendar Bookings Queries
+  const { data: bookings = [] } = useQuery({
+    queryKey: ['admin-calendar-bookings'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('bookings')
+        .select('*, jobs(title)')
+        .order('preferred_date', { ascending: true });
+      return data || [];
+    }
+  });
+
+  // Modify calendar days carrying bookings
+  const bookedDates = bookings
+    .filter(b => b.preferred_date)
+    .map(b => new Date(b.preferred_date));
+
+  const selectedDateBookings = bookings.filter(b => 
+    b.preferred_date && format(new Date(b.preferred_date), 'yyyy-MM-dd') === format(selectedDate || new Date(), 'yyyy-MM-dd')
+  );
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Users" value="128" icon={<Users className="w-5 h-5" />} trend="+12% from last month" />
-        <StatCard title="Active Jobs" value="24" icon={<Briefcase className="w-5 h-5" />} trend="+3 ongoing today" />
-        <StatCard title="Pending Bookings" value="7" icon={<Calendar className="w-5 h-5" />} trend="Requires action" highlight />
-        <StatCard title="System Alerts" value="2" icon={<AlertTriangle className="w-5 h-5" />} trend="Check logs" />
-      </div>
+      {statsLoading ? (
+        <div className="h-20 flex items-center justify-center"><Loader2 className="animate-spin text-[#E8640A]" /></div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Users" value={stats?.users || 0} icon={<Users className="w-5 h-5" />} trend="Registered on system" />
+          <StatCard title="Active Jobs" value={stats?.activeJobs || 0} icon={<Briefcase className="w-5 h-5" />} trend="Live vacancies right now" />
+          <StatCard title="Pending Bookings" value={stats?.pendingBookings || 0} icon={<CalendarIcon className="w-5 h-5" />} trend="Requires action" highlight />
+          <StatCard title="System Enquiries" value={stats?.enquiries || 0} icon={<AlertTriangle className="w-5 h-5" />} trend="New leads to handle" />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 bg-[#1A1A1A] border-[#2E2E2E] shadow-xl overflow-hidden">
-          <CardHeader className="border-b border-[#2E2E2E] h-14 flex items-center justify-center">
-            <CardTitle className="text-white text-base">Recent Activity Logs</CardTitle>
+        <Card className="lg:col-span-2 bg-[#1A1A1A] border-[#2E2E2E] shadow-xl">
+          <CardHeader className="border-b border-[#2E2E2E]">
+            <CardTitle className="text-white text-base">Booking Schedule Calendar</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-[#2E2E2E]">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-start gap-4 p-6 hover:bg-[#202020] transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-[#E8640A]/10 flex items-center justify-center text-[#E8640A] shrink-0">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">New user signed up: John Smith</p>
-                    <p className="text-xs text-[#9CA3AF] mt-1">2 hours ago • user_role: user • IP: 192.168.1.1</p>
-                  </div>
-                </div>
-              ))}
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 p-6 gap-6">
+            <div className="flex justify-center bg-[#1F1F1F] p-4 rounded-xl border border-[#2E2E2E]">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="text-white"
+                modifiers={{ booked: bookedDates }}
+                modifiersStyles={{
+                  booked: { border: '2px solid #E8640A' }
+                }}
+              />
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-white font-semibold text-sm">Bookings for {selectedDate ? format(selectedDate, 'dd MMM yyyy') : 'Today'}</h3>
+              <div className="space-y-3 overflow-y-auto max-h-[300px] pr-2">
+                {selectedDateBookings.length === 0 ? (
+                  <p className="text-[#9CA3AF] text-xs">No bookings scheduled for this date.</p>
+                ) : (
+                  selectedDateBookings.map((b) => (
+                    <div key={b.id} className="p-4 bg-[#1F1F1F] border border-[#2E2E2E] rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-bold text-sm truncate">{b.jobs?.title || 'Custom Service'}</p>
+                        <Badge className={`${
+                          b.status === 'confirmed' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' : 
+                          b.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' : 
+                          'bg-zinc-800 text-zinc-400'
+                        } text-[10px]`}>{b.status}</Badge>
+                      </div>
+                      <p className="text-[11px] text-[#9CA3AF]">{b.property_address || 'No Address'}</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

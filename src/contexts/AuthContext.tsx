@@ -60,11 +60,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!isMounted.current) return;
-      console.log('Auth event (non-awaited):', event, newSession?.user?.email);
       setSession(newSession);
       setUser(newSession?.user ?? null);
-      
       if (newSession?.user) {
+        if (event === 'SIGNED_IN') {
+           const logLogin = async () => {
+              try {
+                  const res = await fetch('https://api.ipify.org?format=json');
+                  const data = await res.json();
+                  await supabase.from('login_history').insert({
+                      user_id: newSession.user.id,
+                      ip_address: data.ip || 'Unknown',
+                      user_agent: navigator.userAgent
+                  });
+              } catch (err) {
+                  console.error('Login log failed:', err);
+              }
+           };
+           logLogin();
+        }
+
         // Fire and forget! Do NOT await this inside the listener.
         // GoTrue awaits listeners while holding a lock. If we await a .select() here, 
         // the client deadlocks trying to fetch the token header via getSession().

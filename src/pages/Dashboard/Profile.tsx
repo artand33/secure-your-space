@@ -22,6 +22,25 @@ const Profile = () => {
   const [propertyType, setPropertyType] = useState(profile?.property_type || '');
   const [address, setAddress] = useState(profile?.address || '');
 
+  const [loginHistory, setLoginHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!user) return;
+      setLoadingHistory(true);
+      const { data } = await supabase
+        .from('login_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (data) setLoginHistory(data);
+      setLoadingHistory(false);
+    };
+    fetchHistory();
+  }, [user]);
+
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name || '');
@@ -166,6 +185,41 @@ const Profile = () => {
                 {loading ? <Loader2 className="animate-spin" /> : 'Save Changes'}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#1A1A1A] border-[#2E2E2E]">
+          <CardHeader className="border-b border-[#2E2E2E]/50">
+            <CardTitle className="text-white text-lg flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#E8640A]" />
+              Recent Login History
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {loadingHistory ? (
+              <div className="p-6 flex justify-center"><Loader2 className="animate-spin text-[#E8640A] w-6 h-6" /></div>
+            ) : loginHistory.length === 0 ? (
+              <p className="p-6 text-center text-[#9CA3AF] text-sm">No recent login events recorded.</p>
+            ) : (
+              <div className="divide-y divide-[#2E2E2E]/50">
+                {loginHistory.map((log) => (
+                  <div key={log.id} className="p-4 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
+                    <div className="space-y-1">
+                      <p className="text-white text-sm font-semibold flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        {log.ip_address}
+                      </p>
+                      <p className="text-[11px] text-[#9CA3AF] truncate max-w-[280px] md:max-w-md">
+                        {log.user_agent}
+                      </p>
+                    </div>
+                    <span className="text-[11px] text-[#4B4B4B] font-medium uppercase tracking-wider">
+                      {new Date(log.created_at).toLocaleDateString('en-GB')} {new Date(log.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                     </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

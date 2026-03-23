@@ -200,10 +200,10 @@ Pre-auth lead tracking.
   - [x] Profile editing (Name, Property Type, Address).
   - [x] Avatar/Photo upload (Supabase Storage integration).
   - [x] Role display and status alerts (Rejection reasons).
-  - [ ] Login history view.
-- [ ] Dashboard KPIs and Calendar View for Admin.
+  - [x] Login history view. (Implemented)
+- [x] Dashboard KPIs and Calendar View for Admin. (Implemented)
 - [x] **Security Hardening**: Configure and test RLS policies for all tables. (Done ✅ - [#11])
-- [ ] Final mobile responsiveness checks and QA.
+- [x] Final mobile responsiveness checks and QA. (Audited & Verified)
 
 ---
 
