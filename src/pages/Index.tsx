@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Hero from "@/components/sections/Hero";
-import EnquiryFormDialog from "@/components/forms/EnquiryFormDialog";
+import CalendlyMultiStepDialog from "@/components/booking/CalendlyMultiStepDialog";
 import Services from "@/components/sections/Services";
 import WhyUs from "@/components/sections/WhyUs";
 import Trust from "@/components/sections/Trust";
@@ -44,7 +44,7 @@ const Index = () => {
         <div id="final-cta">
           <FinalCTA onCTAClick={handleCTAClick} />
         </div>
-        <EnquiryFormDialog open={isEnquiryOpen} onOpenChange={setIsEnquiryOpen} />
+        <CalendlyMultiStepDialog open={isEnquiryOpen} onOpenChange={setIsEnquiryOpen} />
       </div>
 
       {/* Footer */}
