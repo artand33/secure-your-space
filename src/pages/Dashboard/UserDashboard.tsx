@@ -29,7 +29,7 @@ interface Booking {
   property_type: string;
   cancel_reason?: string;
   rejection_reason?: string;
-  jobs: {
+  jobs?: {
     title: string;
     location: string;
     service_types?: {
@@ -112,7 +112,7 @@ const UserDashboard = () => {
               Your Service History
             </h3>
 
-            {authLoading ? (
+            {authLoading || isPending ? (
               <div className="p-12 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl flex items-center justify-center">
                 <Loader2 className="w-6 h-6 text-[#E8640A] animate-spin" />
               </div>
@@ -138,7 +138,7 @@ const UserDashboard = () => {
                         <div className="p-6 flex-1 space-y-4">
                           <div className="flex items-start justify-between">
                             <div className="space-y-1">
-                              <h4 className="text-lg font-bold text-white group-hover:text-[#E8640A] transition-colors">{booking.jobs.title}</h4>
+                              <h4 className="text-lg font-bold text-white group-hover:text-[#E8640A] transition-colors">{booking.jobs?.title || 'Service Details Restricted'}</h4>
                               <p className="text-[10px] text-[#4B4B4B] font-bold uppercase tracking-widest">Job ID: {booking.id.slice(0, 8)}</p>
                             </div>
                             {getStatusBadge(booking.status)}
@@ -158,7 +158,7 @@ const UserDashboard = () => {
                             <InfoItem
                               icon={<ShieldCheck className="w-4 h-4" />}
                               label="Service"
-                              value={booking.jobs.service_types?.name || 'Standard'}
+                              value={booking.jobs?.service_types?.name || 'Standard'}
                             />
                           </div>
 
