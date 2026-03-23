@@ -196,8 +196,8 @@ const DashboardLayout = () => {
 
       {/* Content Area */}
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <div className="flex-1 overflow-auto animate-in fade-in slide-in-from-bottom-2 duration-700 p-4 md:p-12 lg:p-16">
-          <div className="max-w-7xl mx-auto">
+        <div className={`flex-1 overflow-auto animate-in fade-in slide-in-from-bottom-2 duration-700 ${isHomePage ? 'p-0' : 'p-4 md:p-12 lg:p-16'}`}>
+          <div className={isHomePage ? 'w-full' : 'max-w-7xl mx-auto'}>
             <Outlet />
           </div>
         </div>

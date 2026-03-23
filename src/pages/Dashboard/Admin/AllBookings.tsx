@@ -199,9 +199,9 @@ const AllBookings = () => {
   const getStatusBadge = (status: BookingStatus) => {
     switch (status) {
       case 'pending': return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Pending</Badge>;
-      case 'confirmed': return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">Confirmed</Badge>;
+      case 'confirmed': return <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20">Confirmed</Badge>;
       case 'in_progress': return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">In Progress</Badge>;
-      case 'completed': return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Completed</Badge>;
+      case 'completed': return <Badge variant="outline" className="bg-green-400/10 text-green-400 border-green-400/20">Completed</Badge>;
       case 'cancelled': return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">Cancelled</Badge>;
       case 'rejected': return <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20">Rejected</Badge>;
     }
