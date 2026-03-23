@@ -105,7 +105,7 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
                   <SelectContent className="bg-[#1A1A1A] border-[#2E2E2E] text-white">
                     <SelectItem value="Residential">Residential</SelectItem>
                     <SelectItem value="Commercial">Commercial</SelectItem>
-                    <SelectItem value="Industrial">Industrial</SelectItem>
+                    <SelectItem value="Retail">Retail</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

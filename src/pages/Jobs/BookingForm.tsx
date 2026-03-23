@@ -433,7 +433,6 @@ const BookingForm = () => {
                         <SelectItem value="residential">Residential</SelectItem>
                         <SelectItem value="commercial">Commercial</SelectItem>
                         <SelectItem value="retail">Retail</SelectItem>
-                        <SelectItem value="industrial">Industrial</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
