@@ -72,12 +72,6 @@ const DashboardLayout = () => {
     { title: 'Settings', path: '/dashboard/settings', icon: Settings },
   ];
 
-  const adminLinks = [
-    { title: 'Manage Bookings', path: '/admin/bookings', icon: ListTodo },
-    { title: 'Manage Jobs', path: '/admin/jobs', icon: Briefcase },
-    { title: 'Service Catalog', path: '/admin/services', icon: Server },
-    { title: 'Enquiries & Leads', path: '/admin/enquiries', icon: MessageSquare },
-  ];
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-[#1A1A1A] text-white overflow-hidden border-r border-[#2E2E2E]">
@@ -86,8 +80,8 @@ const DashboardLayout = () => {
         <span className="font-bold text-xl tracking-tight italic">SG SYSTEMS</span>
       </div>
 
-      <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto scrollbar-hide">
-        <div className="text-[10px] font-bold text-[#4B4B4B] uppercase tracking-[0.2em] mb-6 px-3">Navigation Menu</div>
+      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-hidden">
+        <div className="text-[10px] font-bold text-[#4B4B4B] uppercase tracking-[0.2em] mb-4 px-3">Navigation Menu</div>
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path || (location.pathname === '/' && link.path.startsWith('/#') && location.hash === link.path.replace('/', ''));
           return (
@@ -95,39 +89,15 @@ const DashboardLayout = () => {
               key={link.path}
               asChild
               variant="ghost"
-              className={`w-full justify-start gap-4 hover:bg-[#202020] transition-all rounded-xl py-7 ${isActive ? 'bg-[#202020] text-[#E8640A]' : 'text-[#9CA3AF] hover:text-[#E8640A]'}`}
+              className={`w-full justify-start gap-4 hover:bg-[#202020] transition-all rounded-xl py-4 h-11 ${isActive ? 'bg-[#202020] text-[#E8640A]' : 'text-[#9CA3AF] hover:text-[#E8640A]'}`}
             >
               <Link to={link.path}>
-                <link.icon className={`w-5 h-5 ${isActive ? 'text-[#E8640A]' : 'text-[#4B4B4B]'}`} />
-                <span className="font-semibold text-lg">{link.title}</span>
+                <link.icon className={`w-4 h-4 ${isActive ? 'text-[#E8640A]' : 'text-[#4B4B4B]'}`} />
+                <span className="font-medium text-sm">{link.title}</span>
               </Link>
             </Button>
           )
         })}
-
-        {isAdmin && (
-          <div className="pt-6">
-            <div className="text-[10px] font-bold text-[#E8640A] uppercase tracking-[0.2em] mb-6 px-3">Admin Controls</div>
-            <div className="space-y-2">
-              {adminLinks.map((link) => {
-                const isActive = location.pathname === link.path;
-                return (
-                  <Button
-                    key={link.path}
-                    asChild
-                    variant="ghost"
-                    className={`w-full justify-start gap-4 hover:bg-[#202020] transition-all rounded-xl py-7 ${isActive ? 'bg-[#202020] text-[#E8640A]' : 'text-[#9CA3AF] hover:text-[#E8640A]'}`}
-                  >
-                    <Link to={link.path}>
-                      <link.icon className={`w-5 h-5 ${isActive ? 'text-[#E8640A]' : 'text-[#4B4B4B]'}`} />
-                      <span className="font-semibold text-lg">{link.title}</span>
-                    </Link>
-                  </Button>
-                )
-              })}
-            </div>
-          </div>
-        )}
       </nav>
 
       <div className="p-4 border-t border-[#2E2E2E] bg-[#141414]">
