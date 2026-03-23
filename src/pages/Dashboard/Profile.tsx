@@ -6,10 +6,43 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { User, Mail, Loader2, ArrowLeft, Camera, Home, MapPin, ShieldCheck, AlertCircle } from 'lucide-react';
+import { User, Mail, Loader2, ArrowLeft, Camera, Home, MapPin, ShieldCheck, AlertCircle, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+
+const compressImage = (file: File, maxWidth = 800, maxHeight = 800, quality = 0.82): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+        } else {
+          if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error('Canvas is empty'));
+        }, 'image/jpeg', quality);
+      };
+    };
+    reader.onerror = error => reject(error);
+  });
+};
 
 const Profile = () => {
   const { profile, user, loading: authLoading, refreshProfile } = useAuth();
@@ -67,16 +100,37 @@ const Profile = () => {
     setLoading(false);
   };
 
+  const handleDeletePhoto = async (e: React.MouseEvent) => {
+
+    e.stopPropagation();
+    if (!user || !profile?.avatar_url) return;
+
+    setUploading(true);
+    try {
+      const { error: updateError } = await supabase.from('profiles').update({ avatar_url: null }).eq('id', user.id);
+      if (updateError) throw updateError;
+
+      toast({ title: 'Success', description: 'Photo removed.' });
+      await refreshProfile();
+    } catch (err: any) {
+      toast({ title: 'Delete failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/${Math.random()}.${fileExt}`;
+      const compressedBlob = await compressImage(file);
+      const compressedFile = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      const filePath = `${user.id}/${Math.random()}.jpg`;
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, compressedFile);
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
@@ -100,13 +154,24 @@ const Profile = () => {
         <Link to="/" className="text-[#9CA3AF] hover:text-[#E8640A] flex items-center"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Link>
         <div className="flex flex-col items-center gap-6 pb-8 border-b border-[#2E2E2E]">
           <div className="relative cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-            <div className="w-28 h-28 rounded-full bg-[#2E2E2E] border-2 border-[#E8640A]/20 flex items-center justify-center text-[#E8640A] text-4xl font-bold overflow-hidden shadow-2xl">
+            <div className="w-28 h-28 rounded-full bg-[#2E2E2E] border-2 border-[#E8640A]/20 flex items-center justify-center text-[#E8640A] text-4xl font-bold overflow-hidden shadow-2xl relative">
               {profile?.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : fullName?.[0] || 'U'}
               {uploading && <div className="absolute inset-0 bg-black/50 flex items-center justify-center"><Loader2 className="animate-spin w-8 h-8 text-white" /></div>}
             </div>
             <div className="absolute bottom-0 right-0 p-2 bg-[#E8640A] rounded-full text-white shadow-lg group-hover:scale-110 transition-transform"><Camera className="w-4 h-4" /></div>
+            {profile?.avatar_url && (
+              <button 
+                type="button" 
+                onClick={handleDeletePhoto} 
+                className="absolute top-0 right-0 p-1.5 bg-red-600 rounded-full text-white shadow-lg hover:bg-red-700 transition-colors z-20 hover:scale-110"
+                title="Remove photo"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
           </div>
+
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white">{profile?.full_name || 'SecureGuard User'}</h2>
             <div className="flex items-center justify-center gap-2 mt-2">
