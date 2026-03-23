@@ -6,6 +6,20 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const StatCardSkeleton = () => (
+  <Card className="bg-[#1A1A1A] border-[#2E2E2E] overflow-hidden shadow-lg p-6 space-y-4">
+    <div className="flex justify-between items-center">
+      <Skeleton className="h-3 w-20 bg-[#2A2A2A] rounded-full" />
+      <Skeleton className="h-10 w-10 bg-[#2A2A2A] rounded-xl" />
+    </div>
+    <div className="space-y-2">
+      <Skeleton className="h-8 w-14 bg-[#2A2A2A] rounded-md" />
+      <Skeleton className="h-3 w-32 bg-[#2A2A2A] rounded-full" />
+    </div>
+  </Card>
+);
 
 const AdminDashboard = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -48,7 +62,11 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {statsLoading ? (
-        <div className="h-20 flex items-center justify-center"><Loader2 className="animate-spin text-[#E8640A]" /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard title="Total Users" value={stats?.users || 0} icon={<Users className="w-5 h-5" />} trend="Registered on system" />
@@ -57,6 +75,7 @@ const AdminDashboard = () => {
           <StatCard title="System Enquiries" value={stats?.enquiries || 0} icon={<AlertTriangle className="w-5 h-5" />} trend="New leads to handle" />
         </div>
       )}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 bg-[#1A1A1A] border-[#2E2E2E] shadow-xl">
@@ -90,7 +109,15 @@ const AdminDashboard = () => {
                           b.status === 'confirmed' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' : 
                           b.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' : 
                           'bg-zinc-800 text-zinc-400'
-                        } text-[10px]`}>{b.status}</Badge>
+                        } text-[10px] flex items-center gap-1`}>
+                          <div className={`w-1 h-1 rounded-full ${
+                            b.status === 'confirmed' ? 'bg-purple-500' :
+                            b.status === 'pending' ? 'bg-yellow-500 animate-breathing' :
+                            'bg-zinc-400'
+                          }`} />
+                          {b.status}
+                        </Badge>
+
                       </div>
                       <p className="text-[11px] text-[#9CA3AF]">{b.property_address || 'No Address'}</p>
                     </div>
@@ -137,19 +164,43 @@ interface StatCardProps {
   highlight?: boolean;
 }
 
-const StatCard = ({ title, value, icon, trend, highlight }: StatCardProps) => (
-  <Card className={`bg-[#1A1A1A] border-[#2E2E2E] overflow-hidden group transition-all duration-300 hover:translate-y-[-4px] ${highlight ? 'ring-1 ring-[#E8640A]/50 shadow-[0_0_20px_rgba(232,100,10,0.1)]' : 'shadow-lg'}`}>
-    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-6">
-      <CardTitle className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">{title}</CardTitle>
-      <div className={`p-2.5 rounded-xl transition-colors duration-300 ${highlight ? 'bg-[#E8640A] text-white' : 'bg-[#2E2E2E] text-[#9CA3AF] group-hover:bg-[#E8640A]/10 group-hover:text-[#E8640A]'}`}>
-        {icon}
-      </div>
-    </CardHeader>
-    <CardContent className="px-6 pb-6">
-      <div className="text-3xl font-bold text-white mb-2">{value}</div>
-      <p className={`text-xs font-medium ${highlight ? 'text-[#E8640A]' : 'text-[#9CA3AF]'}`}>{trend}</p>
-    </CardContent>
-  </Card>
-);
+const StatCard = ({ title, value, icon, trend, highlight }: StatCardProps) => {
+  const cardRef = React.useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const { left, top } = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - top;
+    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
+    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
+  };
+
+  return (
+    <Card 
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      className={`bg-[#1A1A1A] border-[#2E2E2E] overflow-hidden group transition-all duration-300 hover:translate-y-[-4px] relative ${highlight ? 'ring-1 ring-[#E8640A]/50 shadow-[0_0_20px_rgba(232,100,10,0.1)]' : 'shadow-lg'}`}
+    >
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: `radial-gradient(350px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(232, 100, 10, 0.05), transparent 70%)`
+        }} 
+      />
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-6 relative z-10">
+        <CardTitle className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">{title}</CardTitle>
+        <div className={`p-2.5 rounded-xl transition-colors duration-300 ${highlight ? 'bg-[#E8640A] text-white' : 'bg-[#2E2E2E] text-[#9CA3AF] group-hover:bg-[#E8640A]/10 group-hover:text-[#E8640A]'}`}>
+          {icon}
+        </div>
+      </CardHeader>
+      <CardContent className="px-6 pb-6 relative z-10">
+        <div className="text-3xl font-bold text-white mb-2">{value}</div>
+        <p className={`text-xs font-medium ${highlight ? 'text-[#E8640A]' : 'text-[#9CA3AF]'}`}>{trend}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 export default AdminDashboard;

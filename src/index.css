@@ -59,4 +59,13 @@
   .section-divider {
     @apply w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent;
   }
+
+  @keyframes breathing-pulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+  .animate-breathing {
+    animation: breathing-pulse 2s infinite ease-in-out;
+  }
 }

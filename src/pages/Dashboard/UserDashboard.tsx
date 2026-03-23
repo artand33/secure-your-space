@@ -19,6 +19,27 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const BookingCardSkeleton = () => (
+  <Card className="bg-[#1A1A1A] border-[#2E2E2E] shadow-xl overflow-hidden p-6 space-y-4">
+    <div className="flex justify-between items-start">
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-48 bg-[#2A2A2A] rounded-md" />
+        <Skeleton className="h-3 w-20 bg-[#2A2A2A] rounded-full" />
+      </div>
+      <Skeleton className="h-5 w-20 bg-[#2A2A2A] rounded-full" />
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#2E2E2E] pt-4">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="space-y-2">
+          <Skeleton className="h-3 w-16 bg-[#2A2A2A] rounded-full" />
+          <Skeleton className="h-4 w-24 bg-[#2A2A2A] rounded-md" />
+        </div>
+      ))}
+    </div>
+  </Card>
+);
 
 interface Booking {
   id: string;
@@ -41,6 +62,16 @@ interface Booking {
 const UserDashboard = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const profileCardRef = React.useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!profileCardRef.current) return;
+    const { left, top } = profileCardRef.current.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - top;
+    profileCardRef.current.style.setProperty('--mouse-x', `${x}px`);
+    profileCardRef.current.style.setProperty('--mouse-y', `${y}px`);
+  };
 
   const { data: bookings, isPending, isFetching } = useQuery({
     queryKey: ['user-bookings', user?.id],
@@ -73,14 +104,15 @@ const UserDashboard = () => {
   });
   const getStatusBadge = (status: Booking['status']) => {
     switch (status) {
-      case 'pending': return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Pending</Badge>;
-      case 'confirmed': return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">Confirmed</Badge>;
-      case 'in_progress': return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">In Progress</Badge>;
-      case 'completed': return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Completed</Badge>;
-      case 'cancelled': return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">Cancelled</Badge>;
-      case 'rejected': return <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20">Rejected</Badge>;
+      case 'pending': return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-breathing" />Pending</Badge>;
+      case 'confirmed': return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-green-500" />Confirmed</Badge>;
+      case 'in_progress': return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-breathing" />In Progress</Badge>;
+      case 'completed': return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Completed</Badge>;
+      case 'cancelled': return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-red-500" />Cancelled</Badge>;
+      case 'rejected': return <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-gray-400" />Rejected</Badge>;
     }
   };
+
 
   const activeBookings = bookings?.filter(b => ['pending', 'confirmed', 'in_progress'].includes(b.status)) || [];
 
@@ -113,8 +145,10 @@ const UserDashboard = () => {
             </h3>
 
             {authLoading || isPending ? (
-              <div className="p-12 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-[#E8640A] animate-spin" />
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <BookingCardSkeleton key={i} />
+                ))}
               </div>
             ) : !bookings || bookings.length === 0 ? (
               <div className="p-16 border border-[#2E2E2E] bg-[#1A1A1A] rounded-3xl text-center space-y-4 shadow-xl">
@@ -185,8 +219,17 @@ const UserDashboard = () => {
         </div>
 
         <div className="space-y-8">
-          <Card className="bg-[#1A1A1A] border-[#2E2E2E] shadow-2xl sticky top-28 overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#E8640A]/5 rounded-full blur-3xl -mr-16 -mt-16" />
+          <Card 
+            ref={profileCardRef}
+            onMouseMove={handleMouseMove}
+            className="bg-[#1A1A1A] border-[#2E2E2E] shadow-2xl sticky top-28 overflow-hidden group"
+          >
+            <div 
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+              style={{
+                background: `radial-gradient(300px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(232, 100, 10, 0.05), transparent 70%)`
+              }} 
+            />
             <CardHeader className="relative">
               <CardTitle className="text-white text-base flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-[#E8640A]" />
