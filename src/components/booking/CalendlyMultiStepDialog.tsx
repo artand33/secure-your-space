@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InlineWidget } from 'react-calendly';
 import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from 'sonner';
 
 interface CalendlyMultiStepDialogProps {
   open: boolean;
@@ -15,6 +17,8 @@ interface CalendlyMultiStepDialogProps {
 const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialogProps) => {
   const [step, setStep] = useState(1);
   const [loadingCalendly, setLoadingCalendly] = useState(true);
+  const [gdprChecked, setGdprChecked] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Form States
   const [formData, setFormData] = useState({
@@ -32,6 +36,33 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     if (step < 2) setStep(step + 1);
+  };
+
+  const handleSendToN8N = async () => {
+    setIsSending(true);
+    try {
+      const response = await fetch('/api/send-to-n8n', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          propertyType: formData.propertyType,
+          serviceNeed: formData.serviceNeed,
+          urgency: formData.urgency,
+          gdprConsent: gdprChecked,
+          submittedAt: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to send');
+
+      setStep(3); // proceed to calendly
+    } catch (err) {
+      toast.error("Failed to submit assessment details. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleBack = () => {
@@ -149,6 +180,23 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
                 </Select>
               </div>
 
+              <div className="flex items-start space-x-2 pt-2 pb-2">
+                <Checkbox 
+                  id="gdpr" 
+                  checked={gdprChecked} 
+                  onCheckedChange={(val) => setGdprChecked(!!val)} 
+                  className="mt-0.5 border-[#2E2E2E] data-[state=checked]:bg-[#E8640A] data-[state=checked]:border-[#E8640A]"
+                />
+                <div className="grid gap-1 leading-none">
+                  <label 
+                    htmlFor="gdpr"
+                    className="text-xs text-[#9CA3AF] cursor-pointer hover:text-white transition-colors"
+                  >
+                    I agree to the processing of my personal data for the purpose of receiving a security assessment.
+                  </label>
+                </div>
+              </div>
+
               <div className="flex gap-4 pt-2">
                 <Button 
                   type="button" 
@@ -160,11 +208,11 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
                 </Button>
                 <Button 
                   type="button" 
-                  disabled={!isStep2Valid}
-                  onClick={() => setStep(3)}
+                  disabled={!isStep2Valid || !gdprChecked || isSending}
+                  onClick={handleSendToN8N}
                   className="flex-1 bg-[#E8640A] hover:bg-[#F97316] text-white rounded-full h-12 font-bold flex items-center justify-center gap-2"
                 >
-                  Schedule Call <ArrowRight className="w-4 h-4" />
+                  {isSending ? <Loader2 className="animate-spin w-4 h-4" /> : "Schedule Call"} <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             </div>
@@ -204,10 +252,10 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
                 </Button>
                 <Button 
                   type="button" 
-                  onClick={() => { /* placeholder - to be connected later */ }}
+                  onClick={() => onOpenChange(false)}
                   className="flex-1 max-w-[150px] bg-[#E8640A] hover:bg-[#F97316] text-white h-12 rounded-full font-bold flex items-center justify-center gap-2 ml-auto"
                 >
-                  Next <ArrowRight className="w-4 h-4" />
+                  Finish <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             </div>
