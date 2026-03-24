@@ -17,9 +17,10 @@ const Logistics = () => {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section className="py-20 md:py-28">
+    <section className="relative py-24 md:py-32 overflow-hidden bg-gradient-to-b from-transparent via-[#111111]/35 to-transparent border-y border-white/[0.02]">
+      <div className="pointer-events-none absolute -top-20 right-[8%] h-72 w-72 rounded-full bg-primary/10 blur-[120px]" />
       <div className="section-divider mb-20" />
-      <div ref={ref} className="container mx-auto px-4 max-w-5xl">
+      <div ref={ref} className="relative z-10 container mx-auto px-4 max-w-5xl">
         {/* Areas Covered */}
         <div className={`text-center mb-16 ${isVisible ? "animate-fade-in" : "opacity-0"}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Areas We Cover</h2>
@@ -53,7 +54,7 @@ const Logistics = () => {
           <h3 className="text-2xl font-bold text-center mb-12">How It Works</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((s) => (
-              <div key={s.step} className="relative">
+              <div key={s.step} className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur-sm">
                 <span className="text-4xl font-bold text-primary/20 block mb-3">{s.step}</span>
                 <h4 className="text-lg font-semibold mb-2">{s.title}</h4>
                 <p className="text-sm text-muted-foreground">{s.description}</p>
@@ -67,7 +68,7 @@ const Logistics = () => {
           className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${isVisible ? "animate-fade-in" : "opacity-0"}`}
           style={{ animationDelay: "400ms" }}
         >
-          <div className="bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)]">
+          <div className="rounded-2xl p-6 border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.015] backdrop-blur-xl transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
             <h4 className="font-semibold mb-3">Average Installation Times</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>CCTV System — 1 day</li>
@@ -76,7 +77,7 @@ const Logistics = () => {
               <li>Intercom System — Half day</li>
             </ul>
           </div>
-          <div className="bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)]">
+          <div className="rounded-2xl p-6 border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.015] backdrop-blur-xl transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
             <h4 className="font-semibold mb-3">Who This Is For</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>✓ Property owners who want a reliable, professionally installed system</li>

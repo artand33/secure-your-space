@@ -28,10 +28,14 @@ const SocialProof = () => {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section className="py-20 md:py-28">
+    <section className="relative py-24 md:py-32 overflow-hidden bg-gradient-to-b from-transparent via-[#0f141d]/35 to-transparent border-y border-white/[0.02]">
+      <div className="pointer-events-none absolute -top-24 left-[12%] h-64 w-64 rounded-full bg-[#2563eb]/12 blur-[110px]" />
       <div className="section-divider mb-20" />
-      <div ref={ref} className="container mx-auto px-4 max-w-5xl">
+      <div ref={ref} className="relative z-10 container mx-auto px-4 max-w-5xl">
         <div className={`text-center mb-16 ${isVisible ? "animate-fade-in" : "opacity-0"}`}>
+          <span className="inline-flex items-center rounded-full border border-accent/35 bg-accent/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-accent mb-5">
+            Social proof
+          </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
         </div>
 
@@ -39,7 +43,7 @@ const SocialProof = () => {
           {testimonials.map((t, i) => (
             <div
               key={t.name}
-              className={`bg-card rounded-xl p-6 border border-border/70 transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_0_24px_hsl(25_100%_50%/0.18)] ${
+              className={`rounded-2xl p-6 border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.015] backdrop-blur-xl transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-[0_25px_60px_rgba(0,0,0,0.5),0_0_26px_hsl(25_100%_50%/0.17)] ${
                 isVisible ? "animate-fade-in" : "opacity-0"
               }`}
               style={{ animationDelay: isVisible ? `${i * 100 + 200}ms` : undefined }}

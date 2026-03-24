@@ -7,10 +7,11 @@ interface HeroProps {
 
 const Hero = ({ onCTAClick }: HeroProps) => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden border-b border-white/[0.02]">
       {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-primary/10" />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-[#0c0c0c] to-primary/10" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[120px]" />
+      <div className="absolute -top-24 right-[10%] h-64 w-64 rounded-full bg-[#2563eb]/12 blur-[110px]" />
 
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-secondary/60 backdrop-blur-sm mb-8">

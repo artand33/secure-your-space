@@ -19,7 +19,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-foreground relative overflow-hidden bg-[linear-gradient(to_right,#FFFFFF03_1px,transparent_1px),linear-gradient(to_bottom,#FFFFFF03_1px,transparent_1px)] bg-[size:40px_40px]">
+    <div className="min-h-screen site-surface text-foreground relative overflow-hidden bg-[linear-gradient(to_right,#FFFFFF03_1px,transparent_1px),linear-gradient(to_bottom,#FFFFFF03_1px,transparent_1px)] bg-[size:40px_40px]">
       {/* Absolute Dramatic Glow Orbs */}
       <div className="pointer-events-none absolute top-[10%] left-[-20%] w-[1000px] h-[1000px] bg-[#E8640A]/15 rounded-full blur-[160px] mix-blend-screen" />
       <div className="pointer-events-none absolute top-[30%] right-[-25%] w-[1200px] h-[1200px] bg-purple-500/10 rounded-full blur-[200px] mix-blend-screen" />

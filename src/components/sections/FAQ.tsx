@@ -33,17 +33,21 @@ const FAQ = () => {
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <section id="faq" className="py-20 md:py-28 scroll-mt-20">
+    <section id="faq" className="relative py-24 md:py-32 scroll-mt-20 overflow-hidden bg-gradient-to-b from-transparent via-[#121924]/30 to-transparent border-y border-white/[0.02]">
+      <div className="pointer-events-none absolute -bottom-24 left-[15%] h-64 w-64 rounded-full bg-[#2563eb]/12 blur-[110px]" />
       <div className="section-divider mb-20" />
-      <div ref={ref} className="container mx-auto px-4 max-w-3xl">
+      <div ref={ref} className="relative z-10 container mx-auto px-4 max-w-3xl">
         <div className={`text-center mb-12 ${isVisible ? "animate-fade-in" : "opacity-0"}`}>
+          <span className="inline-flex items-center rounded-full border border-accent/35 bg-accent/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-accent mb-5">
+            Common questions
+          </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
         </div>
 
         <div className={`${isVisible ? "animate-fade-in" : "opacity-0"}`} style={{ animationDelay: "200ms" }}>
           <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`item-${i}`} className="bg-card border border-border rounded-xl px-6">
+              <AccordionItem key={i} value={`item-${i}`} className="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.015] backdrop-blur-xl px-6">
                 <AccordionTrigger className="text-left hover:no-underline">
                   {faq.question}
                 </AccordionTrigger>
