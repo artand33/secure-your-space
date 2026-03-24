@@ -6,10 +6,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
 
-  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+  let webhookUrl = process.env.N8N_WEBHOOK_URL || process.env.N8N_WEBHOOK_PLAN;
+
+  if (webhookUrl) {
+    // Remove accidental surrounding quote marks (common when pasting from .env files)
+    webhookUrl = webhookUrl.replace(/^["']|["']$/g, '');
+  }
 
   if (!webhookUrl) {
-    console.error('N8N_WEBHOOK_URL environment variable is missing.');
+    console.error('N8N_WEBHOOK_URL or N8N_WEBHOOK_PLAN environment variable is missing.');
     return res.status(500).json({ 
       error: 'Server configuration error: Webhook URL is not set.' 
     });
