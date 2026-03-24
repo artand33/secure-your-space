@@ -55,11 +55,14 @@ const CalendlyMultiStepDialog = ({ open, onOpenChange }: CalendlyMultiStepDialog
         })
       });
 
-      if (!response.ok) throw new Error('Failed to send');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.details || errorData.error || `Server responded with ${response.status}`);
+      }
 
       setStep(3); // proceed to calendly
-    } catch (err) {
-      toast.error("Failed to submit assessment details. Please try again.");
+    } catch (err: any) {
+      toast.error(`Submission failed: ${err.message}`);
     } finally {
       setIsSending(false);
     }
