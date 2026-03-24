@@ -1,7 +1,7 @@
 # N8N Webhook Integration Plan
 
 ## Objective
-Replace current email submission/placeholder flow with an automated **n8n workflow** triggered via a secure Vercel Serverless Function callback, when users answer questions on the security assessment dialog. 
+Replace the current email/placeholder flow with an automated **n8n workflow** triggered via a secure **Vercel Serverless Function** when users submit the security assessment dialog.
 
 ## Context & Improvement
 Currently, lead responses inside `CalendlyMultiStepDialog.tsx` either use placeholders or proceed solely to Calendly. 
@@ -9,10 +9,10 @@ To ensure **Lead Capture even if building dates are not selected on Calendly**, 
 
 ---
 
-## 📅 Proposed Workflow
+## Proposed Flow
 
-### 1. Vercel Serverless Function (Cors Proxy & Security)
-Since making direct calls to n8n webhook URLs from browsers creates **CORS issues** and **exposes environment credentials**, we will create a lightweight Vercel Serverless Function.
+### 1) Vercel Serverless Function (CORS Proxy + Secret Handling)
+Direct browser calls to n8n webhook URLs can create **CORS issues** and may leak the webhook URL. Instead we send leads to a first-party endpoint hosted on Vercel, which then forwards to n8n using server-side env vars.
 
 *   **File Location:** `/api/send-to-n8n.ts`
 *   **Action:** 
@@ -20,22 +20,28 @@ Since making direct calls to n8n webhook URLs from browsers creates **CORS issue
     2.  Forward payload securely to `process.env.N8N_WEBHOOK_URL`.
     3.  Return a clean JSON response.
 
-### 2. Frontend Updates (`CalendlyMultiStepDialog.tsx`)
+### 2) Frontend Updates (`src/components/booking/CalendlyMultiStepDialog.tsx`)
 
-#### **A. Add GDPR Compliance Checkbox**
-*   **Where:** Place inside **Step 1** or **Step 2** just above the submission button. 
-*   **Reasoning:** Name/Email is personal data. Consent must be given before storing or processing it.
-*   **Validation:** Enable buttons only when the Checkbox is `checked`.
+#### A) GDPR Consent Checkbox
+*   **Where:** Step 2, just above the submit/proceed buttons.
+*   **Why:** Name + email are personal data; consent must be explicit before processing.
+*   **UX requirement:** Disable the submit/proceed CTA until consent is checked.
+*   **Copy recommendation:** Add a link to your Privacy Policy (and optionally a retention period and contact email).
 
-#### **B. Trigger Webhook Call**
-*   When a user completes the questions (currently Step 2), making an API call to `/api/send-to-n8n` before switching state component to Calendly Widget (Step 3).
-*   Add loader/feedback so the transition feels smooth and elite.
+#### B) Trigger Webhook Call
+*   When a user completes Step 2, POST to `/api/send-to-n8n` and include `gdprConsent: true` and a timestamp (`submittedAt`).
+*   Add clear loading feedback while the request is in-flight.
+
+#### C) Decide Failure Behavior (Product Decision)
+Choose one and keep it consistent:
+*   **Fail-closed:** Do not proceed to Calendly unless lead capture succeeds (strict, current behavior).
+*   **Fail-open:** Still proceed to Calendly even if n8n fails, but show a warning and log the error (best conversion, but risk of losing leads).
 
 ---
 
-## 🛠️ Step-by-Step implementation
+## Implementation Notes
 
-### Step 1: Vercel Serverless API Route
+### 1) Vercel Serverless API Route
 ```typescript
 // /api/send-to-n8n.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -66,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 ```
 
-### Step 2: Update `CalendlyMultiStepDialog.tsx`
+### 2) Update the Dialog Component
 1.  **Introduce state:** `const [gdprChecked, setGdprChecked] = useState(false);` and `const [sending, setSending] = useState(false);`
 2.  **Add Checkbox UI:** Using Radix UI Checkbox or shadcn components.
 3.  **Create submission handler:**
@@ -90,10 +96,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 ---
 
-## ⚠️ Requirements / Env Variables
-Ensure you add to your Vercel Dashboard Settings:
-| Variable Name | Value |
-| :--- | :--- |
-| `N8N_WEBHOOK_URL` | *Your n8n webhook URL address* |
+## Requirements / Environment Variables
+Set this in Vercel → Settings → Environment Variables:
+*   `N8N_WEBHOOK_URL`: your n8n webhook URL (the **real** endpoint)
+
+### Local development (important for Vite projects)
+This project uses Vite. The `/api/*` route exists on Vercel, but **won’t exist** if you only run `npm run dev`.
+To test end-to-end locally, run via the Vercel CLI (recommended) or add an explicit dev proxy.
+
+### Security hardening (recommended)
+Even though the webhook URL is stored server-side, the endpoint is still public:
+*   **Validate payload** server-side (schema + size limits).
+*   **Require a shared secret** (e.g., `X-Webhook-Secret`) to prevent spam.
+*   **Rate limit** to reduce bot abuse.
 
 Let me know if you are happy with the plan and when to start the implementation.
